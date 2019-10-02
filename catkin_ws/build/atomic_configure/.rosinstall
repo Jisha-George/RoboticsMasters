@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/computing/RoboticsM/catkin_ws/devel/setup.sh

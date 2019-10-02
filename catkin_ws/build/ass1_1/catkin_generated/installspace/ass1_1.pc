@@ -1,0 +1,8 @@
+prefix=/home/computing/RoboticsM/catkin_ws/install
+
+Name: ass1_1
+Description: Description of ass1_1
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/computing/RoboticsM/catkin_ws/install/lib 
+Requires: 
