@@ -1,0 +1,34 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+
+        <model name="tag_model">
+          <link name="link">
+            <pose>2 2 0.5 0 0 0</pose>
+
+            <collision name="tag_collision">
+              <geometry>
+              <mesh>
+                <uri>model://tag/tag.stl</uri>
+                <scale>0.005 0.005 0.005</scale>
+              </mesh>
+              </geometry>
+            </collision>
+
+            <visual name="tag_visual">
+            <geometry>
+              <mesh>
+                <uri>model://tag/tag.stl</uri>              
+                <scale>0.005 0.005 0.005</scale>
+              </mesh>
+            </geometry>
+            </visual>
+
+            <sensor name='my_tag' type='rfidtag'>
+                  <always_on>1</always_on>
+                  <topic>/tag_topic_name</topic>
+            </sensor>
+          </link>
+        </model>
+
+
+</sdf>

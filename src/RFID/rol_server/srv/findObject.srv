@@ -1,0 +1,69 @@
+# RFID Object Localization 
+# Service operations
+#
+# Config parameters of rol_server
+# minProb == 5%
+# won't report nothing under 5%
+#
+# REQUEST
+# action    operation to be performed: 'list','find','accurate_find', 'accurate_prob'
+# payload   options for the requested action:
+#                - 'list':           'objects' , 'locations' or 'sublocations'
+#                                       [A sublocation is an smaller area INSIDE a bigger one]                                    
+#                - 'find':           One of the objects given by a previous 'list' 'objects'. 
+#                - 'accurate_find':  One of the objects given by a previous 'list' 'objects'. 
+#                - 'accurate_prob':  
+#				     
+#
+# RESPONSE
+# response  String, coma separated on success or empty on fail
+# wasOk     boolean indicating successful action
+# feedback  extra information on error (if possible)
+#
+#
+# EXAMPLES
+#           responses: 'list' 'objects'         -> 'remote,glasses,pillbox,wallet,umbrella'
+#                       .....................................................................................................................
+#                      'list' 'locations'       -> 'kitchen,livingroom,bedroom,bathroom'
+#                       .....................................................................................................................
+#                      'list' 'sublocations'    -> 'kitchen_fridge,kitchen_cook,livingroom_sofas,livingroom_tv,bedroom,bathroom'
+#                                     Notes:          
+#                                        - Sublocation names start with its parent location name and a '_'
+#                                                  [location name]_[sublocation name] 
+#                                        - Areas without sublocations are also reported in this call. This is: 
+#                                                            - If a region has sublocations all ONLY its sublocations are listed, 
+#                                                            - If a region has no sublocations, ONLY its name will be listed
+#                       .....................................................................................................................
+#                      'find' 'remote'          -> 'kitchen,60.02,livingroom,20.48,bedroom,14.31,bathroom,5.69,livingroom,-1'
+#                                     Notes:          
+#                                        - Shows ONLY Regions, NOT subregions           
+#                                        - Sorted by DECREASING probability
+#                                        - Last one is REPEATED, it is last object detection place
+#                      'find' 'umbrella'        -> 'kitchen,-1'
+#                                        - This answer means that it has never received a reading from the umbrella tag
+#                                          It is reporting first location on his list as last detection place.          
+# 
+#                       .....................................................................................................................                           
+#                      'accurate_find' 'remote' -> 'kitchen_fridge,54.40,kitchen_cook,45.60'
+#                      'accurate_find' 'pillbox' -> 'bedroom,60.43'
+#                                     Notes:
+#                                        - Answer will be using sublocations of the most probable location (see 'find'). 
+#                                        - (Sublocation) Probalities here are relative to its location (most probable according to 'find').
+#				                         - If most probable location has no sublocations it will return a 'find' response
+#                       .....................................................................................................................                                 
+#                      'accurate_prob' 'remote' -> 'bedroom,60.43,kitchen_fridge,24.47,kitchen_cook,15.00,bathroom,0.00
+#                                        - Essentially answer is like 'find' [object] but using sublocations where possible.      
+#                        .....................................................................................................................                               
+#                 
+#        Particular case: 
+#                      'find' 'pink'            -> ''             wasOk == False   feedback='object not in system'
+#
+#
+# ..........................................................................................................................
+
+string    action
+string    payload
+---
+string    response
+bool      wasOk
+string    feedback

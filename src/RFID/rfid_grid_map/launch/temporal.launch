@@ -1,0 +1,97 @@
+<launch>
+    
+  <!-- This launcher is a testing for the whole ROL system -->
+  <!-- It includes visualization nodes (rviz-related) -->
+  <!-- Uses a bag file to simulate robot and a big set of tags-->
+
+  <!-- Launch bag file: data -->
+        
+  <!-- Launch static map: for amcl and display -->
+  
+  <!-- Launch amcl: correct odometry -->
+  <!-- Launch amcl: inital guess to track odometry -->
+  <!-- Load regions descriptions used by all object trackers -->
+  <rosparam command="load" file="$(find rfid_grid_map)/config/LCAS3.yaml"/>
+  
+
+
+  <!-- Launch the grid map and visualization on grid.launch -->
+  <include file="$(find rfid_grid_map)/launch/grid.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390000010000000000000006" />
+    <arg name="object" value="lounge table" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/LCAS/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+
+  <!-- Launch the grid map and visualization on grid.launch -->
+  <include file="$(find rfid_grid_map)/launch/grid.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390000010000000000000007" />
+    <arg name="object" value="kitchen table" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/LCAS/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+
+  <!-- Launch the grid map and visualization on grid.launch -->
+  <include file="$(find rfid_grid_map)/launch/grid.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390000010000000000000009" />
+    <arg name="object" value="red stapler" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/LCAS/" />    
+    <arg name="loadGrids" value="false" />            
+  </include>
+  
+  <!-- Launch the grid map and visualization on grid.launch -->
+  <include file="$(find rfid_grid_map)/launch/grid.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390000010000000000000010" />
+    <arg name="object" value="xbox gamepad" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/LCAS/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+
+  <!-- Launch the grid map and visualization on grid.launch -->
+  <include file="$(find rfid_grid_map)/launch/grid.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390000010000000000000012" />
+    <arg name="object" value="logitech gamepad" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/LCAS/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+
+  <!-- Launch the grid map and visualization on grid.launch -->
+  <include file="$(find rfid_grid_map)/launch/grid.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390000010000000000000013" />
+    <arg name="object" value="remote" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/LCAS/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+
+  <!-- Launch the grid map and visualization on grid.launch -->
+  <include file="$(find rfid_grid_map)/launch/grid.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390000010000000000000015" />
+    <arg name="object" value="tape holder" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/LCAS/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+
+  <!-- Launch the grid map and visualization on grid.launch -->
+  <include file="$(find rfid_grid_map)/launch/grid.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390000010000000000000020" />
+    <arg name="object" value="chair" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/LCAS/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+  
+ <!-- Launch ROL Node -->
+ <include file="$(find rol_server)/launch/rol_server_node.launch">
+	<arg name="minProb"   value="0.0" />
+  </include> 
+
+ <!-- Launch RViz with the demo configuration -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find rfid_grid_map)/rviz/rfid_gridmap_test.rviz" />
+</launch>

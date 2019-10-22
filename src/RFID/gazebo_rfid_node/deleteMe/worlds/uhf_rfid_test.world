@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+     <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <model name="reader_box">
+      <link name="link">
+        <pose>0 0 0.5 0 0 0</pose>
+
+        <collision name="box_collision">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </visual>
+
+        <sensor name='my_reader' type='uhf_rfid'>
+              <topic>/reader_topic_name</topic>
+        </sensor>
+      </link>
+    </model>
+
+    <model name="tag_box">
+      <link name="link">
+        <pose>2 2 0.5 0 0 0</pose>
+
+        <collision name="box_collision">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </visual>
+
+        <sensor name='my_tag' type='uhf_rfidtag'>
+              <topic>/tag_topic_name</topic>
+        </sensor>
+      </link>
+    </model>
+
+  </world>
+</sdf>

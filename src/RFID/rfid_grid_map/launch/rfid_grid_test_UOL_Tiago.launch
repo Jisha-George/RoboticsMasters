@@ -1,0 +1,48 @@
+<launch>
+    
+  <!-- This launcher is a testing for the ROL on TIAGO -->
+  <!-- It includes visualization nodes (rviz-related) if necessary -->
+  <!-- Requires rfid_node running -->
+  
+  
+  <!-- Launch bag file: data -->
+  <param name="use_sim_time" value="true" />  
+  <node pkg="rosbag" type="play" name="player" output="screen" args=" --clock $(find rfid_grid_map)/test/tiago_tests/Tiago_Second_RFID.bag"/>
+
+  
+  <!-- Launch static map: for amcl and display -->
+  <node pkg="map_server" type="map_server" name="lcas_map" output="screen" args="$(find rfid_grid_map)/test/tiago_tests/INB3123/map.yaml"/>
+  
+  <!-- Load regions descriptions used by all object trackers -->
+  <rosparam command="load" file="$(find rfid_grid_map)/test/tiago_tests/tiago.yaml"/>
+
+  <!-- Launch the grid map and visualization on grid.launch -->
+  <include file="$(find rfid_grid_map)/launch/grid.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390100010000000000000015" />
+    <arg name="object" value="keys" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/LCAS/" />    
+    <arg name="loadGrids" value="false" />     
+    <arg name="with_visualizer"      value="false"/>   
+  </include>
+
+  <!-- Launch the grid map and visualization on grid.launch -->
+  <include file="$(find rfid_grid_map)/launch/grid.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390100010000000000000019" />
+    <arg name="object" value="wallet" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/LCAS/" />    
+    <arg name="loadGrids" value="false" />     
+    <arg name="with_visualizer"      value="true"/>   
+  </include>
+
+
+
+ <!-- Launch ROL Node --> 
+  <include file="$(find rol_server)/launch/rol_server_node.launch">
+	<arg name="minProb"   value="0.0" />
+  </include> 
+ <!-- Launch RViz with the demo configuration -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find rfid_grid_map)/rviz/rfid_gridmap_test.rviz" />
+
+</launch>

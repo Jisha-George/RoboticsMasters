@@ -1,0 +1,54 @@
+<launch>
+    
+  <!-- This launcher is a debugger for FDG -->
+  <!-- It launches visualization nodes over a 'deploy' RFID system -->
+  
+
+  <!-- Launch the grid map visualization nodes for a tag -->
+  <include file="$(find rfid_grid_map)/launch/grid_visualization.launch">
+    <arg name="tagID" value="390200010000000000000000" />
+    <arg name="object" value="wallet" />
+  </include>
+
+  
+  <!-- Launch the grid map and visualization for a tag -->
+  <include file="$(find rfid_grid_map)/launch/grid_visualization.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390200010000000000000001" />
+    <arg name="object" value="keys" />
+  </include>
+  
+  <!-- Launch the grid map and visualization for a tag -->
+  <include file="$(find rfid_grid_map)/launch/grid_visualization.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390200010000000000000002" />
+    <arg name="object" value="pillbox" />
+  </include>
+  
+  <!-- Launch the grid map and visualization for a tag -->
+  <include file="$(find rfid_grid_map)/launch/grid_visualization.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390200010000000000000003" />
+    <arg name="object" value="remote" />    
+  </include>
+  
+  <!-- Launch the grid map and visualization for a tag -->
+  <include file="$(find rfid_grid_map)/launch/grid_visualization.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390200010000000000000004" />
+    <arg name="object" value="glasses" />
+  </include>
+  
+  <!-- Launch RViz with the demo configuration -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find rfid_grid_map)/rviz/rfid_gridmap_test_FDG.rviz" />
+
+  <!-- Launch define_areas: plots squares on every pair of clicked points. yaml file is initial config, taken from rfid gridmap package-->
+  <node pkg="define_polygon_areas" type="define_polygon_areas_node" name="define_polygon_areas_node" output="screen">
+  </node>
+  <!-- Launch the grid map regions visualizer -->
+  <node pkg="grid_map_visualization" type="grid_map_visualization" name="areas_grid_map_visualization" output="screen">
+    <rosparam command="load" file="$(find define_polygon_areas)/config/visualization.yaml" />
+  </node>
+  
+ 
+</launch>

@@ -1,0 +1,31 @@
+MapName: LCAS
+Regions: [
+      {
+      name: 'kitchen', 
+      points: [1.51, -1.01, 4.52, -1.01, 4.52, 2.14, 1.51, 2.14],
+      subregions: [
+          {name: 'kitchen - fridge', points: [1.55, -0.97, 4.52, -0.97, 4.52, 0.46, 1.55, 0.46] }, 
+          {name: 'kitchen - coffee', points: [1.55,  0.5, 4.52,  0.5, 4.50, 2.1, 1.55, 2.10] }                  
+                  ] 
+      },
+      {
+      name: 'entrance corridor', 
+      points: [-2.7,2.23,4.52,2.23,4.52,4.98,-2.7,4.98]    
+      },
+      {
+      name: 'bathroom corridor', 
+      points: [-0.22,-1.23,1.53,-1.23,1.53,2.1,-0.22,2.1],    
+      },
+      {
+      name: 'entrance', 
+      points: [-5.13,2.23,-2.8,2.23,-2.8,4.98,-5.13,4.98],    
+      },      
+      {
+      name: 'lounge', 
+      points: [-5.13,-1.29,-0.27,-1.29,-0.27,2.2,-5.13,2.2],
+      subregions: [
+          { name: 'lounge - sofas', points: [-5.10,-1.29,-2.59,-1.29,-2.59,2.17,-5.10,2.17] }, 
+          { name: 'lounge - tv', points: [-2.52,-1.29,-0.27,-1.29,-0.27,2.1,-2.52,2.1] }                  
+                  ] 
+      }
+    ]

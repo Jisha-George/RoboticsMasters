@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+ <!--
+
+      Spawns a rfid equipped thorvald in ncfm facilities.
+-->
+
+<launch>
+  <!-- PARAMS .............................................................. -->
+  <arg name="use_sim_time" default="true"/>
+  <param name ="/use_sim_time" value="$(arg use_sim_time)"/>
+
+  <env name="ROSCONSOLE_CONFIG_FILE"
+    value="$(find gazebo_rfid_node)/config/custom_rosconsole.conf"/>
+
+  <arg name="gazeboGui" default="true"/>
+  <arg name="rvizGui" default="true"/>
+  <!-- this file is also included in base_simulation. copied by simplicity  -->
+  <arg name="world_name" default="$(find gazebo_rfid_node)/worlds/ncfm_model_no_actors.world"/>
+  <arg name="map" default="$(find gazebo_worlds_oru)/maps/ncfm_sim.yaml"/>
+  <arg name="rviz_config_file" default="$(find gazebo_rfid_node)/rviz/gazebo_thorvald_rfid.rviz"/>
+
+  <arg name="tf_prefix" default="" />
+  <arg name="robot_name" default="thorvald_001" />
+  <arg name="robot_model" default="$(find rasberry_bringup)/config/robot_007.yaml"/>
+  <arg name="robot_pose_x" default="0.0"/>
+  <arg name="robot_pose_y" default="0.0"/>
+  <arg name="robot_pose_roll" default="0.0"/>
+  <arg name="robot_pose_pitch" default="0.0"/>
+  <arg name="robot_pose_yaw" default="0.0"/>
+
+  <!--
+  This is an approximation:
+        We consider RFID reader to be a "wireless reader" .
+        It has no control over transmitted power.
+  -->
+  <arg name="model_extras" value="$(find gazebo_rfid_node)/urdf/sensor_modules/sensor_frames_lincoln_rfid.xacro" />
+  <arg name="reader_min_frequency" default="800.0"/>
+  <arg name="reader_max_frequency" default="920.0"/>
+  <arg name="reader_gain" default="1"/>
+  <arg name="reader_sensitivity" default="-90.0"/>
+
+  <!--
+  This is an approximation:
+        We consider each tag to be a "wireless transmitter" .
+        Each tag works at a fixed frequency.
+  -->
+  <arg name="tag_id" default="042" />
+  <arg name="tag_x" default="1.0"/>
+  <arg name="tag_y" default="0.0"/>
+  <arg name="tag_z" default="1.5"/>
+  <arg name="tag_roll" default="0.0"/>
+  <arg name="tag_pitch" default="0.0"/>
+  <arg name="tag_yaw" default="0.0"/>
+  <arg name="tag_frequency" default="860.0"/>
+  <arg name="tag_power" default="-30.0"/>
+  <arg name="tag_gain" default="1"/>
+
+  <!-- create gazebo world ................................................. -->
+ <include file="$(find gazebo_ros)/launch/empty_world.launch">
+   <arg name="world_name" value="$(arg world_name)"/>
+   <arg name="paused" value="false"/>
+   <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+   <arg name="gui" value="$(arg gazeboGui)"/>
+   <arg name="recording" value="false"/>
+   <arg name="debug" value="false"/>
+ </include>
+
+  <!-- Spawn thorvald Bond ................................................. -->
+
+  <!-- model bringup -->
+  <include file="$(find thorvald_description)/launch/model.launch">
+    <arg name="robot_name" value=""/>
+    <arg name="tf_prefix" value="$(arg tf_prefix)"/>
+    <arg name="robot_model" value="$(arg robot_model)"/>
+    <arg name="model_extras" value="$(arg model_extras)"/>
+  </include>
+
+  <!-- base bringup-->
+  <node pkg="thorvald_base" type="base_driver" name="base_driver" output="screen">
+    <param name="tf_prefix" value="$(arg tf_prefix)"/>
+    <rosparam command="load" file="$(arg robot_model)" />
+    <param name="simple_sim" value="True" />
+    <param name="enable_odom_tf" value="False"/>
+    <param name="odom_frame_id" value="odom"/>
+  </node>
+
+  <!-- spawn it!-->
+  <node pkg="gazebo_ros" type="spawn_model" name="spawner" args="-urdf -param /robot_description -model thorvald_ii  -x $(arg robot_pose_x) -y $(arg robot_pose_y) -z 0  -R $(arg  robot_pose_roll)  -P $(arg robot_pose_pitch)  -Y $(arg robot_pose_yaw) -min_frequency $(arg reader_min_frequency) -max_frequency $(arg reader_max_frequency) -gain $(arg reader_gain) -sensitivity $(arg reader_sensitivity)"/>
+
+  <!-- Add rfid tag(s)...................................................... -->
+  <param name="tag_description" command="$(find xacro)/xacro '$(find gazebo_rfid_node)/urdf/tag_model.xacro' --inorder ID:='$(arg tag_id)' frequency:='$(arg tag_frequency)' power:='$(arg tag_power)' gain:='$(arg tag_gain)'" />
+
+  <!-- spawn it!-->
+  <node pkg="gazebo_ros" type="spawn_model" name="tag_spawner" args="-urdf -param /tag_description -model tag_$(arg tag_id)  -x $(arg tag_x) -y $(arg tag_y) -z $(arg tag_z)  -R $(arg  tag_roll)  -P $(arg tag_pitch)  -Y $(arg tag_yaw)"/>
+
+  <!-- GAZEBO-ROS bridge ................................................... -->
+  <node pkg="gazebo_rfid_node" type="wirelessNodeMonitor" name="rfid_node_sim" >
+       <param name="ros_rfid_topic_name" value="/lastTag"/>
+       <param name="ros_rfid_frame_id" value="lastTag"/>
+       <param name="gazebo_wireless_node_topic_name" value="/gazebo/default/thorvald_ii/base_link/_head_reader_sensor/transceiver"/>
+     </node>
+
+  <!-- Navigation .......................................................... -->
+
+  <!-- localization -->
+  <node pkg="fake_localization" type="fake_localization" respawn="false" name="fake_loc">
+       <remap from="base_pose_ground_truth" to="odometry/gazebo" />
+       <param name="odom_frame_id" type="string" value="odom"/>
+       <param name="base_frame_id" type="string" value="base_link"/>
+  </node>
+
+  <!-- map server(s) -->
+
+  <!-- Also used in move base... -->
+  <group ns="no_go">
+      <node name="no_go_map_server" pkg="map_server" type="map_server" args="$(arg map)">
+           <remap from="map" to="/no_go_map"/>
+      </node>
+</group>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map)"/>
+
+  <!-- robot_pose_publisher -->
+  <node pkg="robot_pose_publisher" type="robot_pose_publisher" name="robot_pose_publisher" respawn="true">
+    <param name="~map_frame" value="/map"/>
+    <param name="~base_frame" value="/base_link"/>
+  </node>
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" clear_params="true">
+      <remap from="odom" to="odometry/base_raw"/>
+      <rosparam file="$(find rasberry_move_base)/config/dwa/dwa_planner_ros.yaml" command="load"/>
+      <rosparam file="$(find rasberry_move_base)/config/dwa/dwa_move_base_params.yaml" command="load"/>
+      <rosparam file="$(find rasberry_move_base)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+      <rosparam file="$(find rasberry_move_base)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+      <rosparam file="$(find rasberry_move_base)/config/local_costmap_params.yaml" command="load"/>
+      <rosparam file="$(find rasberry_move_base)/config/global_costmap_params.yaml" command="load"/>
+      <rosparam file="$(find rasberry_move_base)/config/nav_fn_ros.yaml" command="load"/>
+  </node>
+
+
+  <!-- Visualization ....................................................... -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config_file)" if="$(arg rvizGui)"/>
+
+</launch>

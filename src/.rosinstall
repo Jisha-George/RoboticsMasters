@@ -1,0 +1,22 @@
+################################################################################
+#                           Experiment setup packages                          #
+################################################################################
+- git: {local-name: mcdm_experiments,             uri: 'https://github.com/LCAS/mcdm_experiments.git', version: 'master'}
+- git: {local-name: record_ros,                   uri: 'https://github.com/pulver22/record_ros.git', version: 'master'}
+################################################################################
+#                           MCDM packages                                      #
+################################################################################
+- git: {local-name: mcdm_exploration_framework,   uri: 'https://github.com/pulver22/mcdm_ros.git', version: 'modularity'}
+- git: {local-name: oru-amtec,                    uri: 'https://github.com/pulver22/oru-amtec.git', version: 'master'}
+- git: {local-name: oru-ptu-control,              uri: 'https://github.com/pulver22/oru-ptu-control.git', version: 'master'}
+################################################################################
+#                           RFID                                               #
+################################################################################
+- git: {local-name: RFID,                         uri: 'https://github.com/LCAS/RFID.git', version: 'master'}
+################################################################################
+#                           SCITOS                                             #
+################################################################################
+# only needed in simulation
+- git: {local-name: scitos_common,                uri: 'https://github.com/MFernandezCarmona/scitos_common.git', version: 'kinetic-devel'}
+# only needed in real robot
+- git: {local-name: strands_systems,              uri: 'https://github.com/MFernandezCarmona/strands_systems.git', version: 'kinetic-devel'}

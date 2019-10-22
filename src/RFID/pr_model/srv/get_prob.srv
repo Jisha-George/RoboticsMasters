@@ -1,0 +1,5 @@
+string modelName
+float64[] state
+float64[] observ
+---
+float64 prob

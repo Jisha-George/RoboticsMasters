@@ -1,0 +1,71 @@
+<launch>
+  <!-- Tester for FDG-->
+  <!-- It does not include visualization nodes -->
+
+  <!-- Uses a bag file to simulate robot -->
+  <!-- Replays FDG test on 8 nov 2016  -->
+
+
+  <!-- Launch bag file: data -->
+  <param name="use_sim_time" value="true" />  
+  <node pkg="rosbag" type="play" name="player" output="screen" args=" --clock $(find rfid_grid_map)/test/fdg_tests2/rfid-build_2016-11-08-10-14-51.bag"/>
+        
+  <!-- Launch static map: for amcl and display -->
+  <node pkg="map_server" type="map_server" name="lcas_map" output="screen" args="$(find rfid_grid_map)/test/fdg_tests2/FDG_RFID_map_Monday.yaml"/>
+  
+  <!-- Load regions descriptions used by all object trackers -->
+  <rosparam command="load" file="$(find rfid_grid_map)/config/FDG3.yaml"/>
+  
+  <!-- Launch the grid map and visualization for a tag -->
+  <include file="$(find rfid_grid_map)/launch/grid_deploy.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390200010000000000000000" />
+    <arg name="object" value="wallet" />    
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/FDG/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+
+  
+  <!-- Launch the grid map and visualization for a tag -->
+  <include file="$(find rfid_grid_map)/launch/grid_deploy.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390200010000000000000001" />
+    <arg name="object" value="keys" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/FDG/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+  
+  <!-- Launch the grid map and visualization for a tag -->
+  <include file="$(find rfid_grid_map)/launch/grid_deploy.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390200010000000000000002" />
+    <arg name="object" value="pillbox" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/FDG/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+  
+  <!-- Launch the grid map and visualization for a tag -->
+  <include file="$(find rfid_grid_map)/launch/grid_deploy.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390200010000000000000003" />
+    <arg name="object" value="remote" />    
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/FDG/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+  
+  <!-- Launch the grid map and visualization for a tag -->
+  <include file="$(find rfid_grid_map)/launch/grid_deploy.launch">
+    <!-- all vars that included.launch requires must be set -->
+    <arg name="tagID" value="390200010000000000000004" />
+    <arg name="object" value="glasses" />
+    <arg name="saveRoute" value="$(find rfid_grid_map)/save/FDG/" />    
+    <arg name="loadGrids" value="false" />        
+  </include>
+  
+ <!-- Launch ROL Node -->
+ <include file="$(find rol_server)/launch/rol_server_node.launch">
+	<arg name="minProb"   value="0.0" />
+  </include>
+ 
+</launch>
+

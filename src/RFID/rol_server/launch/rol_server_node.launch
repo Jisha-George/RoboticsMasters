@@ -1,0 +1,10 @@
+<launch>
+  <!-- This launcher sets rol_server_node.py parameters -->    
+      
+ <arg name="minProb" default="0.0"/> 
+      
+  <node pkg="rol_server" type="rol_server_node.py" name="rol_srv_node" output="screen">
+      <rosparam param="minProb" subst_value="True">"$(arg minProb)"</rosparam>            
+  </node>      
+
+</launch>

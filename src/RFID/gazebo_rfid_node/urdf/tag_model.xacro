@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+
+<!--
+
+-->
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rfid_tag">
+
+<xacro:arg name="ID" default="1"/>
+<xacro:arg name="frequency" default="860.0"/>
+<xacro:arg name="power" default="0.001"/>
+<xacro:arg name="gain" default="1"/>
+
+<xacro:arg name="tf_prefix" default=""/>
+
+<!-- RFID reader -->
+<link name="$(arg tf_prefix)/rfid_tag_$(arg ID)_link">
+  <collision name="rfid_tag_$(arg ID)_collision">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh scale="0.005 0.005 0.005"  filename="package://gazebo_rfid_node/models/tag/tag.stl"/>
+    </geometry>
+  </collision>
+
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh  scale="0.005 0.005 0.005" filename="package://gazebo_rfid_node/models/tag/tag.stl"/>
+    </geometry>
+  </visual>
+
+  <inertial>
+    <mass value="1e-5" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <inertia ixx="1e-1" ixy="0" ixz="0" iyy="1e-1" iyz="0" izz="1e-1" />
+  </inertial>
+</link>
+
+<gazebo reference="$(arg tf_prefix)/rfid_tag_$(arg ID)_link">
+  <turnGravityOff>true</turnGravityOff>
+  <is_static>true</is_static>
+  <gravity>0</gravity>
+  <sensor name="rfid_tag_$(arg ID)_sensor" type="wireless_transmitter">
+    <pose>0 0 0 0 0 0</pose>
+    <visualize>true</visualize>
+    <update_rate>40</update_rate>
+    <always_on>1</always_on>
+    <transceiver>
+      <essid>$(arg ID)</essid>
+      <frequency>$(arg frequency)</frequency>
+      <power>$(arg power)</power>
+      <gain>$(arg gain)</gain>
+    </transceiver>
+  </sensor>
+</gazebo>
+
+
+
+
+</robot>
