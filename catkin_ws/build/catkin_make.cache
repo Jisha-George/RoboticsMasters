@@ -1,2 +1,0 @@
-ass1_1
--DCATKIN_DEVEL_PREFIX=/home/computing/RoboticsM/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/computing/RoboticsM/catkin_ws/install -G Unix Makefiles

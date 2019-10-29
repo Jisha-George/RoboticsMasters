@@ -1,8 +1,0 @@
-prefix=/home/computing/RoboticsM/catkin_ws/devel
-
-Name: Ass1_1
-Description: Description of Ass1_1
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/computing/RoboticsM/catkin_ws/devel/lib 
-Requires: 
