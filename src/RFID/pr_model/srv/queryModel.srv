@@ -1,4 +1,0 @@
-float64[] s  # state vector
-float64[] o  # observation vector (at state s)
----
-float64 llh  # log likehood of o at state s according to model
