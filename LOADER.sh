@@ -7,6 +7,15 @@ sudo apt-get install ros-kinetic-image-view
 sudo apt-get install ros-kinetic-rqt-graph
 sudo apt-get install ros-kinetic-rviz
 
+sudo apt-get install \
+    ros-kinetic-robot-localization \
+    ros-kinetic-topological-navigation \
+    ros-kinetic-amcl \
+    ros-kinetic-fake-localization \
+    ros-kinetic-carrot-planner
+
+source ./RoboticsM/CMP9767M-master/catkin_ws/devel/setup.bash
+
 #source /opt/ros/kinetic/setup.bash
 #roslaunch uol_cmp9767m_base thorvald-sim.launch
 
