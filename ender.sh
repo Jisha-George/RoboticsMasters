@@ -20,28 +20,28 @@ git config user.email unset
 git config --global user.name unset
 git config --global user.email unset
 
-cd ~/Desktop/HackRF
+#cd ~/Desktop/HackRF
 
-@ECHO off
-git config user.name "Jisha-George"
-git config user.email "jishathakidiyel@yahoo.com"
+#@ECHO off
+#git config user.name "Jisha-George"
+#git config user.email "jishathakidiyel@yahoo.com"
 
-git config --global user.name "Jisha-George"
-git config --global user.email "jishathakidiyel@yahoo.com"
+#git config --global user.name "Jisha-George"
+#git config --global user.email "jishathakidiyel@yahoo.com"
 
-git add .
+#git add .
 
-git commit -am "Automatic Commit"
+#git commit -am "Automatic Commit"
 
-git push origin
+#git push origin
 
-git config user.name unset
-git config user.email unset
-git config --global user.name unset
-git config --global user.email unset
+#git config user.name unset
+#git config user.email unset
+#git config --global user.name unset
+#git config --global user.email unset
 
-cd ..
+#cd ..
 
-rm -r -f HackRF
+#rm -r -f HackRF
 
-rm -r -f RoboticsM
+#rm -r -f RoboticsM
