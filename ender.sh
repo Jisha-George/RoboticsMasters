@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ~/Desktop/RoboticsM
+#cd ~/Desktop/RoboticsM
 
 @ECHO off
 git config user.name "Jisha-George"
