@@ -314,10 +314,12 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
-        "": true
         Grid: true
         LaserScan: true
         Map: true
+        Path: true
+        PointCloud2: true
+        Polygon: true
         RobotModel: true
         Value: true
       Zoom Factor: 1
@@ -406,7 +408,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: map
+    Fixed Frame: thorvald_001/base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -427,16 +429,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 31.7041855
+      Distance: 74.7498016
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -7.6913681
-        Y: -0.767756999
-        Z: 1.8396467
+        X: 2.1266048
+        Y: -1.54149854
+        Z: -0.921359777
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
@@ -485,5 +487,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1855
-  X: 1985
+  X: 65
   Y: 24

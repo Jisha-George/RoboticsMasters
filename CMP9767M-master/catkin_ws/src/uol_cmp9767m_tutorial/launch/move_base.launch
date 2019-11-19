@@ -9,16 +9,14 @@
 	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/>
 
 	<!-- localization -->
-	<node name="fake_localization" pkg="fake_localization" type="fake_localization">
+	<!-- <node name="fake_localization" pkg="fake_localization" type="fake_localization">
             <remap from="base_pose_ground_truth" to="$(arg robot_name)/odometry/gazebo" />
             <param name="odom_frame_id" type="string" value="$(arg robot_name)/odom"/>
             <param name="base_frame_id" type="string" value="$(arg robot_name)/base_link"/>
-	</node> 
+	</node> -->
 
-	<!-- 
 	<include file="$(find uol_cmp9767m_tutorial)/launch/amcl.launch"/>
-	-->
-	
+
 	<!-- move_base -->
 	<node name="move_base" pkg="move_base" type="move_base" output="screen">
         <remap from="odom" to="$(arg robot_name)/odometry/base_raw" />
@@ -32,5 +30,5 @@
 
         <rosparam file="$(find uol_cmp9767m_tutorial)/config/planners.yaml" command="load"/>
 
-	</node> 
+	</node>
 </launch>
