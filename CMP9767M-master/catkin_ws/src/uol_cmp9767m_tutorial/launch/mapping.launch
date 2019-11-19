@@ -17,9 +17,9 @@
       <param name="base_frame_id" type="string" value="$(arg robot_name)/base_link"/>
     </node>
 
-    <!-- 
-    <include file="$(find uol_cmp9767m_tutorial)/launch/amcl.launch"/>
-    -->
+
+    <!-- <include file="$(find uol_cmp9767m_tutorial)/launch/amcl.launch"/> -->
+
 
     <!-- move_base -->
     <node name="move_base" pkg="move_base" type="move_base" output="screen">
