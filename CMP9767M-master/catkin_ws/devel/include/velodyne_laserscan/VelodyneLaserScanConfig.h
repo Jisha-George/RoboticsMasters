@@ -397,13 +397,13 @@ VelodyneLaserScanConfig::GroupDescription<VelodyneLaserScanConfig::DEFAULT, Velo
 //#line 290 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
       __min__.ring = -1;
 //#line 290 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
-      __max__.ring = 16;
+      __max__.ring = 31;
 //#line 290 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
       __default__.ring = -1;
 //#line 290 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
-      Default.abstract_parameters.push_back(VelodyneLaserScanConfig::AbstractParamDescriptionConstPtr(new VelodyneLaserScanConfig::ParamDescription<int>("ring", "int", 5, "Ring to extract as laser scan (-1 default)", "", &VelodyneLaserScanConfig::ring)));
+      Default.abstract_parameters.push_back(VelodyneLaserScanConfig::AbstractParamDescriptionConstPtr(new VelodyneLaserScanConfig::ParamDescription<int>("ring", "int", 0, "Ring to extract as laser scan (-1 default)", "", &VelodyneLaserScanConfig::ring)));
 //#line 290 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
-      __param_descriptions__.push_back(VelodyneLaserScanConfig::AbstractParamDescriptionConstPtr(new VelodyneLaserScanConfig::ParamDescription<int>("ring", "int", 5, "Ring to extract as laser scan (-1 default)", "", &VelodyneLaserScanConfig::ring)));
+      __param_descriptions__.push_back(VelodyneLaserScanConfig::AbstractParamDescriptionConstPtr(new VelodyneLaserScanConfig::ParamDescription<int>("ring", "int", 0, "Ring to extract as laser scan (-1 default)", "", &VelodyneLaserScanConfig::ring)));
 //#line 290 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"
       __min__.resolution = 0.001;
 //#line 290 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator_catkin.py"

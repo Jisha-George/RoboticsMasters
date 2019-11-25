@@ -67,14 +67,14 @@ set(uol_cmp9767m_tutorial_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("TRUE" STREQUAL "TRUE")
-  set(uol_cmp9767m_tutorial_SOURCE_PREFIX /home/user/RoboticsM/CMP9767M-master/catkin_ws/src/uol_cmp9767m_tutorial)
-  set(uol_cmp9767m_tutorial_DEVEL_PREFIX /home/user/RoboticsM/CMP9767M-master/catkin_ws/devel)
+  set(uol_cmp9767m_tutorial_SOURCE_PREFIX /home/computing/RoboticsM/CMP9767M-master/catkin_ws/src/uol_cmp9767m_tutorial)
+  set(uol_cmp9767m_tutorial_DEVEL_PREFIX /home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel)
   set(uol_cmp9767m_tutorial_INSTALL_PREFIX "")
   set(uol_cmp9767m_tutorial_PREFIX ${uol_cmp9767m_tutorial_DEVEL_PREFIX})
 else()
   set(uol_cmp9767m_tutorial_SOURCE_PREFIX "")
   set(uol_cmp9767m_tutorial_DEVEL_PREFIX "")
-  set(uol_cmp9767m_tutorial_INSTALL_PREFIX /home/user/RoboticsM/CMP9767M-master/catkin_ws/install)
+  set(uol_cmp9767m_tutorial_INSTALL_PREFIX /home/computing/RoboticsM/CMP9767M-master/catkin_ws/install)
   set(uol_cmp9767m_tutorial_PREFIX ${uol_cmp9767m_tutorial_INSTALL_PREFIX})
 endif()
 
@@ -91,9 +91,9 @@ endif()
 # flag project as catkin-based to distinguish if a find_package()-ed project is a catkin project
 set(uol_cmp9767m_tutorial_FOUND_CATKIN_PROJECT TRUE)
 
-if(NOT "/home/user/RoboticsM/CMP9767M-master/catkin_ws/devel/include " STREQUAL " ")
+if(NOT "/home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel/include " STREQUAL " ")
   set(uol_cmp9767m_tutorial_INCLUDE_DIRS "")
-  set(_include_dirs "/home/user/RoboticsM/CMP9767M-master/catkin_ws/devel/include")
+  set(_include_dirs "/home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel/include")
   if(NOT " " STREQUAL " ")
     set(_report "Check the issue tracker '' and consider creating a ticket if the problem has not been reported yet.")
   elseif(NOT " " STREQUAL " ")
@@ -110,7 +110,7 @@ if(NOT "/home/user/RoboticsM/CMP9767M-master/catkin_ws/devel/include " STREQUAL 
         message(FATAL_ERROR "Project 'uol_cmp9767m_tutorial' specifies '${idir}' as an include dir, which is not found.  It does not exist in '${include}'.  ${_report}")
       endif()
     else()
-      message(FATAL_ERROR "Project 'uol_cmp9767m_tutorial' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/user/RoboticsM/CMP9767M-master/catkin_ws/src/uol_cmp9767m_tutorial/${idir}'.  ${_report}")
+      message(FATAL_ERROR "Project 'uol_cmp9767m_tutorial' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/computing/RoboticsM/CMP9767M-master/catkin_ws/src/uol_cmp9767m_tutorial/${idir}'.  ${_report}")
     endif()
     _list_append_unique(uol_cmp9767m_tutorial_INCLUDE_DIRS ${include})
   endforeach()
@@ -131,7 +131,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/user/RoboticsM/CMP9767M-master/catkin_ws/devel/lib;/opt/ros/kinetic/lib)
+    foreach(path /home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel/lib;/home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel/lib;/opt/ros/kinetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

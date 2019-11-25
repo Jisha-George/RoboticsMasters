@@ -3,56 +3,22 @@
 <launch>
     <arg name="robot_name" default="thorvald_001"/>
     <arg name="ring" default="0" />  
-   
-  
     <arg name="resolution" default="0.007" />
-    <!-- gmapping -->
+
     <node pkg="velodyne_laserscan" type="velodyne_laserscan_node" name="laserscan" output="screen">
         <remap from="velodyne_points" to="$(arg robot_name)/velodyne_points"/>
         <remap from="scan" to="$(arg robot_name)/vel/scan"/>
         <param name="ring" value="$(arg ring)"/> 
         <param name="resolution" value="$(arg resolution)"/>
-    </node>
-<!--    <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
-
-        <remap from="cloud_in" to="$(arg robot_name)/velodyne_points"/>
-        <remap from="scan" to="$(arg robot_name)/vel/scan"/>
-        <rosparam>
-            min_height: 0.9
-            max_height: 1
-
-            angle_min: -3.14159 # -M_PI/2
-            angle_max: 3.14159 # M_PI/2
-            scan_time: 0.4
-            range_min: 0.4
-            range_max: 40
-            use_inf: true
-
-            # Concurrency level, affects number of pointclouds queued for processing and number of threads used
-            # 0 : Detect number of cores
-            # 1 : Single threaded
-            # 2->inf : Parallelism level
-            concurrency_level: 1
-        </rosparam>
-
     </node> 
- 
-   <node pkg="but_velodyne_proc" type="laser_scan" name="but_velodyne_proc_laserscan_node" output="screen">
-  	<remap from="points_in" to="$(arg robot_name)/velodyne_points" />
-	<remap from="scan" to="$(arg robot_name)/vel/scan" />
-	<remap from="map2d_out" to="/velodyne/map2d"/>
-	<param name="min_z" value="0.1" />
-	<param name="max_z" value="10.0" />
-	<param name="angular_res" value="0.1" />
-	<param name="min_range" value="1.2" />
+<!---->
     
-    </node> -->
-    <!--param name="frame_id" value="/velodyne" /-->
     <!-- gmapping -->
     <node name="gmapping" pkg="gmapping" type="slam_gmapping">
-        <remap from="scan" to="$(arg robot_name)/vel/scan" />
+        <remap from="scan" to="$(arg robot_name)/scan" />
         <param name="odom_frame" type="string" value="$(arg robot_name)/odom"/>
         <param name="base_frame" type="string" value="$(arg robot_name)/base_link"/>
+        <param name="minimumScore" value="50"/>
     </node>
 
     <!-- localization -->
@@ -60,6 +26,7 @@
       <remap from="base_pose_ground_truth" to="$(arg robot_name)/odometry/gazebo" />
       <param name="odom_frame_id" type="string" value="$(arg robot_name)/odom"/>
       <param name="base_frame_id" type="string" value="$(arg robot_name)/base_link"/>
+       
     </node>
 
 
