@@ -67,14 +67,14 @@ set(uol_cmp9767m_base_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("TRUE" STREQUAL "TRUE")
-  set(uol_cmp9767m_base_SOURCE_PREFIX /home/computing/RoboticsM/CMP9767M-master/catkin_ws/src/uol_cmp9767m_base)
-  set(uol_cmp9767m_base_DEVEL_PREFIX /home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel)
+  set(uol_cmp9767m_base_SOURCE_PREFIX /home/user/RoboticsM/CMP9767M-master/catkin_ws/src/uol_cmp9767m_base)
+  set(uol_cmp9767m_base_DEVEL_PREFIX /home/user/RoboticsM/CMP9767M-master/catkin_ws/devel)
   set(uol_cmp9767m_base_INSTALL_PREFIX "")
   set(uol_cmp9767m_base_PREFIX ${uol_cmp9767m_base_DEVEL_PREFIX})
 else()
   set(uol_cmp9767m_base_SOURCE_PREFIX "")
   set(uol_cmp9767m_base_DEVEL_PREFIX "")
-  set(uol_cmp9767m_base_INSTALL_PREFIX /home/computing/RoboticsM/CMP9767M-master/catkin_ws/install)
+  set(uol_cmp9767m_base_INSTALL_PREFIX /home/user/RoboticsM/CMP9767M-master/catkin_ws/install)
   set(uol_cmp9767m_base_PREFIX ${uol_cmp9767m_base_INSTALL_PREFIX})
 endif()
 
@@ -110,7 +110,7 @@ if(NOT "/usr/include;/usr/include/gazebo-8;/usr/include/bullet;/usr/include/simb
         message(FATAL_ERROR "Project 'uol_cmp9767m_base' specifies '${idir}' as an include dir, which is not found.  It does not exist in '${include}'.  ${_report}")
       endif()
     else()
-      message(FATAL_ERROR "Project 'uol_cmp9767m_base' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/computing/RoboticsM/CMP9767M-master/catkin_ws/src/uol_cmp9767m_base/${idir}'.  ${_report}")
+      message(FATAL_ERROR "Project 'uol_cmp9767m_base' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/user/RoboticsM/CMP9767M-master/catkin_ws/src/uol_cmp9767m_base/${idir}'.  ${_report}")
     endif()
     _list_append_unique(uol_cmp9767m_base_INCLUDE_DIRS ${include})
   endforeach()
@@ -131,7 +131,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel/lib;/home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel/lib;/opt/ros/kinetic/lib)
+    foreach(path /home/user/RoboticsM/CMP9767M-master/catkin_ws/devel/lib;/opt/ros/kinetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

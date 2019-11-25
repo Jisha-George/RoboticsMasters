@@ -24,7 +24,9 @@ sudo apt-get install sublime-text
 sudo apt-get install ros-kinetic-uol-cmp9767m-base
 sudo apt-get install ros-kinetic-uol-cmp9767m-tutorial
 
+sudo bash LOADER.sh
+
 sudo apt-get update && sudo apt-get upgrade
 #git clone https://github.com/Jisha-George/RoboticsM
-
+#https://youtu.be/IFNikTHN1pk?t=382
 #git clone https://github.com/Jisha-George/HackRF

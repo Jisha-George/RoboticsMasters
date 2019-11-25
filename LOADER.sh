@@ -12,7 +12,8 @@ sudo apt-get install \
     ros-kinetic-topological-navigation \
     ros-kinetic-amcl \
     ros-kinetic-fake-localization \
-    ros-kinetic-carrot-planner
+    ros-kinetic-carrot-planner \
+    ros-kinetic-gmapping
 
 source ./RoboticsM/CMP9767M-master/catkin_ws/devel/setup.bash
 
