@@ -14,7 +14,10 @@ sudo apt-get install \
     ros-kinetic-fake-localization \
     ros-kinetic-carrot-planner \
     ros-kinetic-gmapping\
-    ros-kinetic-roslint
+    ros-kinetic-roslint\
+    ros-kinetic-velodyne-laserscan\
+    libpcap-dev\
+
 
 source ./RoboticsM/CMP9767M-master/catkin_ws/devel/setup.bash
 
@@ -22,6 +25,7 @@ source ./RoboticsM/CMP9767M-master/catkin_ws/devel/setup.bash
 #roslaunch uol_cmp9767m_base thorvald-sim.launch
 
 #rosrun rviz rviz
+#rviz -d `rospack find uol_cmp9767m_base`/rviz/thorvald.rviz
 
 #https://github.com/LCAS/CMP9767M/wiki/Workshop-1---Introduction-and-ROS-Basics
 
