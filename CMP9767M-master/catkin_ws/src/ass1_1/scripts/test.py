@@ -35,10 +35,8 @@ class Follower:
 	def __init__(self):
 
 		self.bridge = cv_bridge.CvBridge()
-		self.image_sub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image,
-										  self.image_callback)
-		self.cmd_vel_pub = rospy.Publisher('thorvald_001/teleop_joy/cmd_vel', Twist,
-										   queue_size=1)
+		self.image_sub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
+		self.cmd_vel_pub = rospy.Publisher('thorvald_001/teleop_joy/cmd_vel', Twist, queue_size=1)
 		#self.maskPub = rospy.Publisher('/13488071/images/mask', Image, queue_size = 1)
 		self.twist = Twist()
 
@@ -57,7 +55,7 @@ class Follower:
 		
 		BFill = numpy.array(self.imfill(thresh), dtype='uint8')
 		BWE = cv2.erode(BFill, kernel10, iterations=1)
-		BRe = self.imreconstruct(BWE, BFill, kernel)		
+		BRe = self.imreconstruct(BWE, BFill, kernel2)		
 		
 		WeedMask = (BFill - BRe)
 		
