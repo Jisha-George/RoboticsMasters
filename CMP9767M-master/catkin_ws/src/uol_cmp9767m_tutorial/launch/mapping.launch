@@ -5,14 +5,6 @@
     <arg name="ring" default="0" />  
     <arg name="resolution" default="0.007" />
 
-    <node pkg="velodyne_laserscan" type="velodyne_laserscan_node" name="laserscan" output="screen">
-        <remap from="velodyne_points" to="$(arg robot_name)/velodyne_points"/>
-        <remap from="scan" to="$(arg robot_name)/vel/scan"/>
-        <param name="ring" value="$(arg ring)"/> 
-        <param name="resolution" value="$(arg resolution)"/>
-    </node> 
-<!---->
-    
     <!-- gmapping-->
     <node name="gmapping" pkg="gmapping" type="slam_gmapping">
         <remap from="scan" to="$(arg robot_name)/scan" />
@@ -28,12 +20,18 @@
       <param name="base_frame_id" type="string" value="$(arg robot_name)/base_link"/>
     </node>   
     
-		
-
+	
    <!--<include file="$(find uol_cmp9767m_tutorial)/launch/amcl.launch"/> -->
 		
 
     <!-- move_base -->
+    <node pkg="velodyne_laserscan" type="velodyne_laserscan_node" name="laserscan" output="screen">
+        <remap from="velodyne_points" to="$(arg robot_name)/velodyne_points"/>
+        <remap from="scan" to="$(arg robot_name)/vel/scan"/>
+        <param name="ring" value="$(arg ring)"/> 
+        <param name="resolution" value="$(arg resolution)"/>
+    </node>
+
     <node name="move_base" pkg="move_base" type="move_base" output="screen">
         <remap from="odom" to="$(arg robot_name)/odometry/base_raw" />
         <remap from="cmd_vel" to="$(arg robot_name)/nav_vel" />
@@ -48,8 +46,4 @@
 
     </node>
     
-    
-
-    
-
 </launch>

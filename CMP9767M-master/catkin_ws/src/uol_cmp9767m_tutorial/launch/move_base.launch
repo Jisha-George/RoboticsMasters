@@ -4,18 +4,27 @@
 
 	<arg name="robot_name" default="thorvald_001"/>
 	<arg name="map_file" default="$(find uol_cmp9767m_base)maps/cropped.yaml"/>
+	<arg name="ring" default="0" />  
+    <arg name="resolution" default="0.007" />
+
+    <node pkg="velodyne_laserscan" type="velodyne_laserscan_node" name="laserscan" output="screen">
+        <remap from="velodyne_points" to="$(arg robot_name)/velodyne_points"/>
+        <remap from="scan" to="$(arg robot_name)/vel/scan"/>
+        <param name="ring" value="$(arg ring)"/> 
+        <param name="resolution" value="$(arg resolution)"/>
+    </node> 
 
 	<!-- map server -->
 	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/>
 
 	<!-- localization -->
-	<!-- <node name="fake_localization" pkg="fake_localization" type="fake_localization">
+	<node name="fake_localization" pkg="fake_localization" type="fake_localization">
             <remap from="base_pose_ground_truth" to="$(arg robot_name)/odometry/gazebo" />
             <param name="odom_frame_id" type="string" value="$(arg robot_name)/odom"/>
             <param name="base_frame_id" type="string" value="$(arg robot_name)/base_link"/>
-	</node> -->
+	</node> 
 
-	<include file="$(find uol_cmp9767m_tutorial)/launch/amcl.launch"/>
+	<!-- <include file="$(find uol_cmp9767m_tutorial)/launch/amcl.launch"/>-->
 
 	<!-- move_base -->
 	<node name="move_base" pkg="move_base" type="move_base" output="screen">

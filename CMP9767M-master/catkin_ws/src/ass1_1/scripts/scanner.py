@@ -16,7 +16,6 @@ from random import randint, random
 from time import sleep, time
 from datetime import timedelta
 from sys import argv
-from statistics import median
 
 class Follower:
 	def __init__(self, ring_id):
