@@ -17,20 +17,25 @@ from time import sleep, time
 from datetime import timedelta
 from sys import argv
 
-class Follower:
+class scanFilter:
 	def __init__(self, ring_id):
 		self.ring_id = ring_id
 		
 		if ring_id == "0":
 			self.distavg = 5.9
+		elif ring_id == "1":
+			self.distavg = 6.8
+		elif ring_id == "2":
+			self.distavg = 7.8
+		elif ring_id == "3":
+			self.distavg = 7.8
 		
-		
-		self.scanSub = rospy.Subscriber('thorvald_001/vel/scan', LaserScan, self.scanning)
-		self.ring_pub = rospy.Publisher('thorvald_001/vel/scan_filtered', LaserScan,queue_size=1)
+		self.scanSub = rospy.Subscriber('/thorvald_001/'+ring_id+'/velscan_'+ring_id, LaserScan, self.scanning)
+		self.ring_pub = rospy.Publisher('/thorvald_001/'+ring_id+'/velscan_filtered_'+ring_id, LaserScan,queue_size=1)
+		print(self.distavg)
 
 	def scanning(self, data):
 		r = numpy.array(data.ranges)
-		print(self.distavg)
 		
 		X = 0.2
 		for i in range (0,len(r)):
@@ -42,9 +47,9 @@ class Follower:
 
 if __name__ == '__main__':
 	cv2.startWindowThread()
-	rospy.init_node('follower')
+	rospy.init_node('scan_filter_'+argv[1])
 	
-	follower = Follower(argv[1])
+	sf = scanFilter(argv[1])
 	rospy.spin()
 
 	cv2.destroyAllWindows()
