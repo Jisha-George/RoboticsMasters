@@ -5,32 +5,21 @@ footprint: [[1, 1], [1, -1], [-1, -1], [-1, 1]]
 gmapping_layer:
   map_topic: map
 
+inflation_layer:
+  inflation_radius: 2
+  cost_scaling_factor: 2.0
 
-
-local_inflation_layer:
-  inflation_radius: 1.5
-  cost_scaling_factor: 1.0
-
-global_inflation_layer:
-  inflation_radius: 2.5
-  cost_scaling_factor: 1.0
-
-global_obstacle_layer:
+obstacle_layer:
   max_obstacle_height: 2
   obstacle_range: 10
   raytrace_range: 10
   unknown_threshold: 10
   mark_threshold: 0
   track_unknown_space: true
-  observation_sources: laser_scan_sensor laser_scan_sensor0 laser_scan_sensor1 laser_scan_sensor2 laser_scan_sensor3
-  laser_scan_sensor: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/scan, marking: true, clearing: true}
-  laser_scan_sensor0: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/0/velscan_filtered_0, marking: true, clearing: true}
-  laser_scan_sensor1: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/1/velscan_filtered_1, marking: true, clearing: true}
-  laser_scan_sensor2: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/2/velscan_filtered_2, marking: true, clearing: true}
-  laser_scan_sensor3: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/3/velscan_filtered_3, marking: true, clearing: true}
-  laser_scan_sensor3: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/3/velscan_filtered_9, marking: true, clearing: true}
-
-
-
-#dynamic_object_layer:
-  
+  observation_sources: laser_scan_sensor laser_scan_sensor0 laser_scan_sensor1 laser_scan_sensor2 laser_scan_sensor3 laser_scan_sensor12
+  laser_scan_sensor: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/scan}
+  laser_scan_sensor0: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/0/velscan_filtered_0}
+  laser_scan_sensor1: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/1/velscan_filtered_1}
+  laser_scan_sensor2: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/2/velscan_filtered_2}
+  laser_scan_sensor3: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/3/velscan_filtered_3}
+  laser_scan_sensor12: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/12/velscan_filtered_12}

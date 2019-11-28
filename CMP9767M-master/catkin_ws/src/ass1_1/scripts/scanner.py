@@ -31,7 +31,8 @@ class scanFilter:
 			self.distavg = 7.8
 		elif int(ring_id) > "7":
 			self.distavg = 100
-
+		else:
+			self.distavg = 100
 		
 		self.scanSub = rospy.Subscriber('/thorvald_001/'+ring_id+'/velscan_'+ring_id, LaserScan, self.scanning)
 		self.ring_pub = rospy.Publisher('/thorvald_001/'+ring_id+'/velscan_filtered_'+ring_id, LaserScan,queue_size=1)

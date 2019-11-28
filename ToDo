@@ -1,0 +1,13 @@
+1. create low down stuff map 
+	(scan == vel_filtered, clearing = false, marking = true)
+2. create scan map 
+	(scan == /scan, clearing = false, marking = true)
+
+
+
+
+3. create low_only map 
+	(take diff of [1:2])
+4. create nodynamic map
+	(scan == /scan, clearing = true, marking = false, map=1)
+

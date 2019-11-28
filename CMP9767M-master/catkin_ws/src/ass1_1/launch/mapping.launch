@@ -36,7 +36,7 @@
 		<include file="$(find ass1_1)/launch/vel_filt.launch"><arg name="ring" value="1"/></include>
 		<include file="$(find ass1_1)/launch/vel_filt.launch"><arg name="ring" value="2"/></include>
 		<include file="$(find ass1_1)/launch/vel_filt.launch"><arg name="ring" value="3"/></include>
-		<include file="$(find ass1_1)/launch/vel_filt.launch"><arg name="ring" value="9"/></include>
+		<include file="$(find ass1_1)/launch/vel_filt.launch"><arg name="ring" value="12"/></include>
 	</group>
 
 

@@ -6,5 +6,5 @@ local_costmap:
   plugins:  
     - {name: gmapping_layer, type: "costmap_2d::StaticLayer"}
     - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
-    - {name: local_inflation_layer, type: "costmap_2d::InflationLayer"}
-
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+#    - {name: dynamic_object_layer, type: "social_navigation_layer::ProxemicLayer"}
