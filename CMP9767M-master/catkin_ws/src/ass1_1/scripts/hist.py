@@ -14,7 +14,7 @@ from random import randint, random
 from time import sleep, time
 from datetime import timedelta
 from sys import argv
-
+#from matplotlib import pyplot
 #######################################################################################################################################
 
 #kernel size for eroding the mask (to get rid of the small pixels in the mask)

@@ -1,7 +1,3 @@
-#>>> green = numpy.uint8([[[0,255,0 ]]])
-#>>> hsv_green = cv2.cvtColor(green,cv2.COLOR_BGR2HSV)
-#>>> print hsv_green
-
 # USE ABOVE TO CALCULATE COLOUR VALUES IN HSV
 # lower green = 50, 100, 100
 # upper green = 70, 255, 255
@@ -15,32 +11,138 @@
 #lower yellow = 20, 100, 100
 #upper yellow = 40, 255, 255
 
+#import statements
 import numpy
-
 import cv2
 import cv_bridge
 import rospy
-
-from sensor_msgs.msg import Image
-from geometry_msgs.msg import Twist
+#specific imports
+from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseActionFeedback
+from nav_msgs.msg import Odometry, OccupancyGrid
+from actionlib_msgs.msg import GoalStatusArray
 from cv_bridge import CvBridge, CvBridgeError
-from matplotlib import pyplot
+from sensor_msgs.msg import Image, LaserScan
+from geometry_msgs.msg import Twist
+from time import sleep, time
+from std_srvs.srv import Empty
 
+######################################################################################################
+
+#kernel size for eroding the mask (to get rid of the small pixels in the mask)
 kernel = numpy.ones((1,1), numpy.uint8)
 kernel2 = numpy.ones((3,3), numpy.uint8)
 kernel10 = numpy.ones((25,25), numpy.uint8)
 
-class Follower:
+######################################################################################################
+
+class Weed_Killer:
 
 	def __init__(self):
 
 		self.bridge = cv_bridge.CvBridge()
-		self.image_sub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
-		self.cmd_vel_pub = rospy.Publisher('thorvald_001/teleop_joy/cmd_vel', Twist, queue_size=1)
-		#self.maskPub = rospy.Publisher('/13488071/images/mask', Image, queue_size = 1)
+		
+		#Subscribers
+		self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
+		self.scanSub = rospy.Subscriber('/thorvald_001/scan', LaserScan, self.scanning)
+	# self.odomSub = rospy.Subscriber('/move_base/feedback', MoveBaseActionFeedback, self.odom)
+		self.statSub = rospy.Subscriber('/move_base/status', GoalStatusArray, self.status)
+		
+		#Publishers
+		self.velPub = rospy.Publisher('thorvald_001/teleop_joy/cmd_vel', Twist, queue_size=1)
+		self.movePub = rospy.Publisher('/move_base/goal', MoveBaseActionGoal, queue_size = 1)
+		self.basPub = rospy.Publisher('/images/basil', Image, queue_size = 1)
+		self.cabPub = rospy.Publisher('/images/cabbage', Image, queue_size = 1)
+		self.imgPub = rospy.Publisher('/images/image', Image, queue_size = 1)
+		
+		self.spray = rospy.ServiceProxy('/thorvald_001/spray', Empty)
 		self.twist = Twist()
+		
+		#Variables
+		self.ab = True
+		sleep(2)
+		
+		while not(rospy.is_shutdown()):
+			#self.move(6.5,3.25,0,1)
+			#self.wait()
+			#self.move(-6.5,3.25,1,0)
+			#self.wait()
+			#self.move(-6.5,2.25,0,1)
+			#self.wait()
+			#self.move(6.5,2.25,1,0)
+			#self.wait()
+			self.move(6.5,0.25,0,1)
+			self.wait()
+			self.move(-6.5,0.25,1,0)
+			self.wait()
+			self.move(-6.5,-0.75,0,1)
+			self.wait()
+			self.move(6.5,-0.75,1,0)
+			self.wait()
+			self.move(6.5,-2.75,0,1)
+			self.wait()
+			self.move(-6.5,-2.75,1,0)
+			self.wait()
+			self.move(-6.5,-3.75,0,1)
+			self.wait()
+			self.move(6.5,-3.75,1,0)
+			self.wait()
+#######################################################################################################################################
+        #checks the status message given by the move_base/status topic
+	def status(self, msg):
+		try:
+			self.stat = msg.status_list[len(msg.status_list)-1].status
+			self.ab = True
+		except: 
+			if self.ab == True:
+				self.ab = False
+			
+######################################################################################################################################
+        #alternative function to sleep, waits for a success status, an aborted status or timeout
+	def wait(self):
+		timer = time()
+		sleep(1)
+		try:
+			while True:
+				cv2.waitKey(1)
+				if self.stat == 3:
+					break;
+				elif self.stat == 4:
+					break;
+				elif(time()-timer > 121):
+					break;
+		except:
+			print("Status not published")
+				######################################################################################################
 
+	def move(self, x, y, z, w):
+		co_move = MoveBaseActionGoal()
+		co_move.goal.target_pose.pose.position.x = x
+		co_move.goal.target_pose.pose.position.y = y
+		co_move.goal.target_pose.pose.orientation.z = z
+		co_move.goal.target_pose.pose.orientation.w = w
+		co_move.goal.target_pose.header.stamp = rospy.Time.now()
+		co_move.goal.target_pose.header.frame_id = 'map'
+		co_move.goal.target_pose.header.seq = 102
+		self.movePub.publish(co_move)
+#######################################################################################################################################
+        #relative move_base system... activated when a colour in mask is present
+	def rel_move(self, x, y, z, w):
+		colour_found = MoveBaseActionGoal()
+		colour_found.goal.target_pose.pose.position.x = x
+		colour_found.goal.target_pose.pose.position.y = y
+		colour_found.goal.target_pose.pose.orientation.y = z
+		colour_found.goal.target_pose.pose.orientation.w = w
+		colour_found.goal.target_pose.header.stamp = rospy.Time.now()
+		colour_found.goal.target_pose.header.frame_id = 'thorvald_001/base_link'
+		colour_found.goal.target_pose.header.seq = 101		
+		self.movePub.publish(colour_found)
+######################################################################################################
 
+	def scanning(self, msg):
+		self.dist = msg.ranges[320]
+
+######################################################################################################
+	
 	def image_callback(self, msg):
 
 		image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
@@ -52,30 +154,44 @@ class Follower:
 
 		_, thresh = cv2.threshold(hsv[:,:,0].astype(float)/180, 0.2,1, cv2.THRESH_BINARY)
 		
-		
 		BFill = numpy.array(self.imfill(thresh), dtype='uint8')
 		BWE = cv2.erode(BFill, kernel10, iterations=1)
 		BRe = self.imreconstruct(BWE, BFill, kernel2)		
 		
 		WeedMask = (BFill - BRe)
 		
-		
-		
 		basil = cv2.inRange(hsv, numpy.array([45, 0, 0]), numpy.array([130, 255, 255]))
 		
 		mask = basil
-#		mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-
-
 		mask = numpy.array(self.imfill(mask), dtype='uint8')
-
-		masked_image = cv2.bitwise_and(image, image, mask=mask)
+		mask = cv2.erode(mask,kernel)
+		WeedMask = cv2.erode(WeedMask,kernel)
+		
+		maskd = cv2.bitwise_and(image, image, mask=mask)
 		Re = cv2.bitwise_and(image, image, mask=WeedMask)
 
-		cv2.imshow("image", cv2.resize(image,(720, 450)))
-		cv2.imshow("Basil", cv2.resize(masked_image,(720, 450)))
-		cv2.imshow("Cabbage", cv2.resize(Re,(720, 450)))
-		cv2.waitKey(3)
+		self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(maskd,(720, 450)), encoding = 'bgr8'))
+		self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(Re,(720, 450)), encoding = 'bgr8'))
+		self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
+
+		a = numpy.sum(mask[((mask.shape[0]/2)-10):((mask.shape[0]/2)+10), (mask.shape[1]/3):((mask.shape[1]/3)*2)])
+		b = numpy.sum(WeedMask[((WeedMask.shape[0]/2)-10):((WeedMask.shape[0]/2)+10), (WeedMask.shape[1]/3):((WeedMask.shape[1]/3)*2)])
+		
+		if a > b:
+		#sum of cabbage is greater than basil:
+			self.finder(WeedMask)
+		else:
+			self.finder(mask)
+	#continue moving
+			
+		self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(maskd,(720, 450)), encoding = 'bgr8'))
+		self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(Re,(720, 450)), encoding = 'bgr8'))
+		self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
+#		cv2.imshow("image", cv2.resize(image,(720, 450)))
+	#	cv2.imshow("Basil", cv2.resize(masked_image,(720, 450)))
+#		cv2.imshow("Cabbage", cv2.resize(Re,(720, 450)))
+	#	cv2.waitKey(3)
+######################################################################################################
 
 	def imreconstruct(self, img, mask, st): #img is dilated
 
@@ -95,6 +211,7 @@ class Follower:
 				return img
 			img_new = img
 			
+######################################################################################################
 
 	def imfill(self, im_in): #swap this out to only accept binary images
 		h, w = im_in.shape[:2]
@@ -113,14 +230,40 @@ class Follower:
 		RET = (rec[1:h+1,1:w+1]==0)
 
 		#return not(reconstructed)
-		return RET
+		return RET		
+######################################################################################################
 
+	def finder(self, mask):
+	#if the mask at center equals 1
+		lk = numpy.sum(mask[((mask.shape[0]/2)-10),((mask.shape[0]/2)+10)]):	
+		if lk 
+				#	then move forward 2
+				self.rel_move(2,0,0,1)
+				sleep(2)
+				#	spray
+				self.spray() #james said its this way
+				# move back 1
+				self.rel_move(-1,0,0,1)
+				sleep(1)
+				#self.twist.linear.x = 2
+				#self.velPub.publish(self.twist)
+				#	spray
+			#	self.spray() #james said its this way
+				# move back 1
+		#		sleep(0.5)
+	#			self.twist.linear.x = -1
+#				self.velPub.publish(self.twist)
+######################################################################################################
+	
+	#def main(self):
 
+######################################################################################################
 
+if __name__ == '__main__':
+	cv2.startWindowThread()
+	rospy.init_node('start')
 
-cv2.startWindowThread()
-rospy.init_node('follower')
-follower = Follower()
-rospy.spin()
+	start = Weed_Killer()
+	rospy.spin()
 
-cv2.destroyAllWindows()
+	cv2.destroyAllWindows()
