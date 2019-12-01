@@ -19,7 +19,7 @@ import rospy
 #specific imports
 from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseActionFeedback
 from nav_msgs.msg import Odometry, OccupancyGrid
-from actionlib_msgs.msg import GoalStatusArray
+from actionlib_msgs.msg import GoalStatusArray, GoalID
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, LaserScan
 from geometry_msgs.msg import Twist
@@ -53,23 +53,23 @@ class Weed_Killer:
 		self.basPub = rospy.Publisher('/images/basil', Image, queue_size = 1)
 		self.cabPub = rospy.Publisher('/images/cabbage', Image, queue_size = 1)
 		self.imgPub = rospy.Publisher('/images/image', Image, queue_size = 1)
+		self.canPub = rospy.Publisher('/move_base/cancel',GoalID, queue_size = 1)
 		
 		self.spray = rospy.ServiceProxy('/thorvald_001/spray', Empty)
-		self.twist = Twist()
 		
 		#Variables
 		self.ab = True
 		sleep(2)
 		
 		while not(rospy.is_shutdown()):
-			#self.move(6.5,3.25,0,1)
-			#self.wait()
-			#self.move(-6.5,3.25,1,0)
-			#self.wait()
-			#self.move(-6.5,2.25,0,1)
-			#self.wait()
-			#self.move(6.5,2.25,1,0)
-			#self.wait()
+			self.move(6.5,3.25,0,1)
+			self.wait()
+			self.move(-6.5,3.25,1,0)
+			self.wait()
+			self.move(-6.5,2.25,0,1)
+			self.wait()
+			self.move(6.5,2.25,1,0)
+			self.wait()
 			self.move(6.5,0.25,0,1)
 			self.wait()
 			self.move(-6.5,0.25,1,0)
@@ -108,7 +108,7 @@ class Weed_Killer:
 					break;
 				elif self.stat == 4:
 					break;
-				elif(time()-timer > 121):
+				elif(time()-timer > 150):
 					break;
 		except:
 			print("Status not published")
@@ -126,12 +126,12 @@ class Weed_Killer:
 		self.movePub.publish(co_move)
 #######################################################################################################################################
         #relative move_base system... activated when a colour in mask is present
-	def rel_move(self, x, y, z, w):
+	def rel_move(self, x, y):
 		colour_found = MoveBaseActionGoal()
 		colour_found.goal.target_pose.pose.position.x = x
 		colour_found.goal.target_pose.pose.position.y = y
-		colour_found.goal.target_pose.pose.orientation.y = z
-		colour_found.goal.target_pose.pose.orientation.w = w
+		colour_found.goal.target_pose.pose.orientation.z = 0
+		colour_found.goal.target_pose.pose.orientation.w = 1
 		colour_found.goal.target_pose.header.stamp = rospy.Time.now()
 		colour_found.goal.target_pose.header.frame_id = 'thorvald_001/base_link'
 		colour_found.goal.target_pose.header.seq = 101		
@@ -169,7 +169,10 @@ class Weed_Killer:
 		
 		maskd = cv2.bitwise_and(image, image, mask=mask)
 		Re = cv2.bitwise_and(image, image, mask=WeedMask)
-
+		
+		mask[((mask.shape[0]/2)-10):((mask.shape[0]/2)+10), :] = 255
+		
+		
 		self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(maskd,(720, 450)), encoding = 'bgr8'))
 		self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(Re,(720, 450)), encoding = 'bgr8'))
 		self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
@@ -234,25 +237,30 @@ class Weed_Killer:
 ######################################################################################################
 
 	def finder(self, mask):
-	#if the mask at center equals 1
-		lk = numpy.sum(mask[((mask.shape[0]/2)-10),((mask.shape[0]/2)+10)]):	
-		if lk 
-				#	then move forward 2
-				self.rel_move(2,0,0,1)
-				sleep(2)
-				#	spray
-				self.spray() #james said its this way
-				# move back 1
-				self.rel_move(-1,0,0,1)
-				sleep(1)
-				#self.twist.linear.x = 2
-				#self.velPub.publish(self.twist)
-				#	spray
+		t = Twist()	
+		#if the mask at center equals 1
+		if numpy.any(mask[((mask.shape[0]/2)-10),((mask.shape[0]/2)+10)]) == 1:
+			self.canPub.publish(GoalID())#	then move forward 2
+			sleep(0.5)
+			t.linear.x = 2
+			self.velPub.publish(t)
+			sleep(1)
+			self.spray()#james said its this way
+			t.linear.x = 0
+			self.velPub.publish(t)
+			sleep(0.5)
+			t.linear.x = -1
+			self.velPub.publish(t)
+			#	spray 
+			# move back 1
+			#self.rel_move(-1,0)
+			#sleep(1)
+			
+			#	spray
 			#	self.spray() #james said its this way
-				# move back 1
-		#		sleep(0.5)
-	#			self.twist.linear.x = -1
-#				self.velPub.publish(self.twist)
+			# move back 1
+			#	t.linear.x = -1
+			#	self.velPub.publish(t)
 ######################################################################################################
 	
 	#def main(self):
