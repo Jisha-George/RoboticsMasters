@@ -9,6 +9,9 @@ git config user.email "jishathakidiyel@yahoo.com"
 git config --global user.name "Jisha-George"
 git config --global user.email "jishathakidiyel@yahoo.com"
 
+git add --force CMP9767M-master/catkin_ws/src/velodyne-master/velodyne_driver/src/lib
+git add --force CMP9767M-master/catkin_ws/src/velodyne-master/velodyne_pointcloud/src/lib
+
 git add .
 
 git commit -am "Automatic Commit"
