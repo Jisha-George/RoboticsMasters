@@ -58,43 +58,41 @@ class Weed_Killer:
 		self.spray = rospy.ServiceProxy('/thorvald_001/spray', Empty)
 		
 		#Variables
-		self.ab = True
-		sleep(2)
-		
+		self.stat = -1
+		o = 6.5
+
 		while not(rospy.is_shutdown()):
-			self.move(6.5,3.25,0,1)
+			self.move(o,3.25,0,1)
 			self.wait()
-			self.move(-6.5,3.25,1,0)
+			self.move(-o,3.25,1,0)
 			self.wait()
-			self.move(-6.5,2.25,0,1)
+			self.move(-o,2.25,0,1)
 			self.wait()
-			self.move(6.5,2.25,1,0)
+			self.move(o,2.25,1,0)
 			self.wait()
-			self.move(6.5,0.25,0,1)
+			self.move(o,0.25,0,1)
 			self.wait()
-			self.move(-6.5,0.25,1,0)
+			self.move(-o,0.25,1,0)
 			self.wait()
-			self.move(-6.5,-0.75,0,1)
+			self.move(-o,-0.75,0,1)
 			self.wait()
-			self.move(6.5,-0.75,1,0)
+			self.move(o,-0.75,1,0)
 			self.wait()
-			self.move(6.5,-2.75,0,1)
+			self.move(o,-2.75,0,1)
 			self.wait()
-			self.move(-6.5,-2.75,1,0)
+			self.move(-o,-2.75,1,0)
 			self.wait()
-			self.move(-6.5,-3.75,0,1)
+			self.move(-o,-3.75,0,1)
 			self.wait()
-			self.move(6.5,-3.75,1,0)
+			self.move(o,-3.75,1,0)
 			self.wait()
 #######################################################################################################################################
         #checks the status message given by the move_base/status topic
 	def status(self, msg):
 		try:
 			self.stat = msg.status_list[len(msg.status_list)-1].status
-			self.ab = True
 		except: 
-			if self.ab == True:
-				self.ab = False
+			print("Error with status")
 			
 ######################################################################################################################################
         #alternative function to sleep, waits for a success status, an aborted status or timeout
@@ -110,6 +108,8 @@ class Weed_Killer:
 					break;
 				elif(time()-timer > 150):
 					break;
+				elif self.stat == -1:
+					print("Status not published")
 		except:
 			print("Status not published")
 				######################################################################################################
