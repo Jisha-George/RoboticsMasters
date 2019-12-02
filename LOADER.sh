@@ -19,7 +19,7 @@ sudo apt-get install \
     libpcap-dev\
 
 
-source ./RoboticsM/CMP9767M-master/catkin_ws/devel/setup.bash
+source ~/RoboticsM/CMP9767M-master/catkin_ws/devel/setup.bash
 
 #source /opt/ros/kinetic/setup.bash
 #roslaunch uol_cmp9767m_base thorvald-sim.launch

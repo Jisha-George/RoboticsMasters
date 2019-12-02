@@ -40,7 +40,8 @@ class Weed_Killer:
 	def __init__(self):
 
 		self.bridge = cv_bridge.CvBridge()
-		
+		self.cGoal = 0
+		self.ab = True
 		#Subscribers
 		self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
 		self.scanSub = rospy.Subscriber('/thorvald_001/scan', LaserScan, self.scanning)
@@ -60,32 +61,11 @@ class Weed_Killer:
 		#Variables
 		self.stat = -1
 		o = 6.5
-
-		while not(rospy.is_shutdown()):
-			self.move(o,3.25,0,1)
-			self.wait()
-			self.move(-o,3.25,1,0)
-			self.wait()
-			self.move(-o,2.25,0,1)
-			self.wait()
-			self.move(o,2.25,1,0)
-			self.wait()
-			self.move(o,0.25,0,1)
-			self.wait()
-			self.move(-o,0.25,1,0)
-			self.wait()
-			self.move(-o,-0.75,0,1)
-			self.wait()
-			self.move(o,-0.75,1,0)
-			self.wait()
-			self.move(o,-2.75,0,1)
-			self.wait()
-			self.move(-o,-2.75,1,0)
-			self.wait()
-			self.move(-o,-3.75,0,1)
-			self.wait()
-			self.move(o,-3.75,1,0)
-			self.wait()
+		d = 3.25
+		self.path = [[o,0.25,0,1],[-o,0.25,0,1],[-o,-0.75,0,1],[o,-0.75,0,1],[o,-2.75,0,1],[-o,-2.75,0,1],[-o,-3.75,0,1],[o,-3.75,0,1]]
+		sleep(2)
+		self.main()
+				
 #######################################################################################################################################
         #checks the status message given by the move_base/status topic
 	def status(self, msg):
@@ -93,7 +73,14 @@ class Weed_Killer:
 			self.stat = msg.status_list[len(msg.status_list)-1].status
 		except: 
 			print("Error with status")
-			
+			print(msg)			
+	def statu2s(self, msg):
+		try:
+			self.stat = msg.status_list[len(msg.status_list)-1].status
+			self.ab = True
+		except: 
+			if self.ab == True:
+				self.ab = False
 ######################################################################################################################################
         #alternative function to sleep, waits for a success status, an aborted status or timeout
 	def wait(self):
@@ -109,20 +96,32 @@ class Weed_Killer:
 				elif(time()-timer > 150):
 					break;
 				elif self.stat == -1:
-					print("Status not published")
+					print("Status list empty")
 		except:
 			print("Status not published")
-				######################################################################################################
+############################################################			
+	def waiter(self):
+		try:
+			while True:
+				cv2.waitKey(1)
+				if self.stat == 3:
+					break;
+		except:
+			print("Status not published")
+######################################################################################################
 
+	def moveg(self, cGoal):
+		self.move(cGoal[0],cGoal[1],cGoal[2],cGoal[3])
+		
 	def move(self, x, y, z, w):
 		co_move = MoveBaseActionGoal()
 		co_move.goal.target_pose.pose.position.x = x
 		co_move.goal.target_pose.pose.position.y = y
 		co_move.goal.target_pose.pose.orientation.z = z
 		co_move.goal.target_pose.pose.orientation.w = w
-		co_move.goal.target_pose.header.stamp = rospy.Time.now()
+		#co_move.goal.target_pose.header.stamp = rospy.Time.now()
 		co_move.goal.target_pose.header.frame_id = 'map'
-		co_move.goal.target_pose.header.seq = 102
+		#co_move.goal.target_pose.header.seq = 102
 		self.movePub.publish(co_move)
 #######################################################################################################################################
         #relative move_base system... activated when a colour in mask is present
@@ -182,8 +181,10 @@ class Weed_Killer:
 		
 		if a > b:
 		#sum of cabbage is greater than basil:
+			print('cabbage')
 			self.finder(WeedMask)
 		else:
+			print('basil')
 			self.finder(mask)
 	#continue moving
 			
@@ -251,11 +252,12 @@ class Weed_Killer:
 			sleep(0.5)
 			t.linear.x = -1
 			self.velPub.publish(t)
+			sleep(1)
 			#	spray 
 			# move back 1
 			#self.rel_move(-1,0)
 			#sleep(1)
-			
+			self.moveg(self.cGoal)
 			#	spray
 			#	self.spray() #james said its this way
 			# move back 1
@@ -263,7 +265,13 @@ class Weed_Killer:
 			#	self.velPub.publish(t)
 ######################################################################################################
 	
-	#def main(self):
+	def main(self):
+		i = 0
+		while not(rospy.is_shutdown()):
+			for i in range(len(self.path)):
+				self.cGoal = self.path[i]
+				self.moveg(self.cGoal)
+				self.waiter()
 
 ######################################################################################################
 
