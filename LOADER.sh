@@ -17,6 +17,7 @@ sudo apt-get install \
     ros-kinetic-roslint\
     ros-kinetic-velodyne-laserscan\
     libpcap-dev\
+    ros-kinetic-velodyne-gazebo-plugins8\
 
 
 source ~/RoboticsM/CMP9767M-master/catkin_ws/devel/setup.bash

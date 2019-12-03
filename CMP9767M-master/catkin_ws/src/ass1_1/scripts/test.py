@@ -177,8 +177,8 @@ class Weed_Killer:
 		#self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(cab_mas,(720, 450)), encoding = 'bgr8'))
 		#self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
 
-		a = numpy.sum(Basil[((Basil.shape[0]/2)-20):((Basil.shape[0]/2)+20), (Basil.shape[1]/3):((Basil.shape[1]/3)*2)])
-		b = numpy.sum(Cabbage[((Cabbage.shape[0]/2)-20):((Cabbage.shape[0]/2)+20), (Cabbage.shape[1]/3):((Cabbage.shape[1]/3)*2)])
+		a = numpy.sum(Basil[((Basil.shape[0]/2)-30):((Basil.shape[0]/2)+30), (Basil.shape[1]/3):((Basil.shape[1]/3)*2)])
+		b = numpy.sum(Cabbage[((Cabbage.shape[0]/2)-30):((Cabbage.shape[0]/2)+30), (Cabbage.shape[1]/3):((Cabbage.shape[1]/3)*2)])
 		
 		if a > b:
 		#sum of cabbage is greater than basil:
@@ -249,27 +249,30 @@ class Weed_Killer:
 
 	def finder(self, masks):
 		t = Twist()	
-		r = rospy.Rate(1)
+		r = rospy.Rate(10)
 		#if the mask at center equals 1
-		if numpy.any(masks[((masks.shape[0]/2)-10),((masks.shape[0]/2)+10)]) == 1:
+		if numpy.any(masks[((masks.shape[0]/2)-30),((masks.shape[0]/2)+30)]) == 1:
 			print(self.cGoal)
 			self.canPub.publish(GoalID())#	then move forward 2
-			sleep(0.5)
-			t.linear.x = 0.5
+
+			sleep(5)
+			t.linear.x = 2
 			self.velPub.publish(t)
+
 			print("forwards")
-			r.sleep()
-			#sleep(1)
+			sleep(1)
 			self.spray()#james said its this way
+
+			sleep(1)
 			t.linear.x = -1
-			r.sleep()
 			self.velPub.publish(t)
+
 			print("backwards")
-			r.sleep()
+			sleep(1)
 			self.moveg(self.cGoal)
 	
 	def finderx(self, mask):	
-		if numpy.any(mask[((mask.shape[0]/2)-10),((mask.shape[0]/2)+10)]) == 1:
+		if numpy.any(mask[((mask.shape[0]/2)-30),((mask.shape[0]/2)+30)]) == 1:
 			print(self.cGoal)
 			self.canPub.publish(GoalID())#	then move forward 2
 			sleep(0.5)

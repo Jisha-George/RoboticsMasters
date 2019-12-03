@@ -91,9 +91,9 @@ endif()
 # flag project as catkin-based to distinguish if a find_package()-ed project is a catkin project
 set(uol_cmp9767m_base_FOUND_CATKIN_PROJECT TRUE)
 
-if(NOT "/usr/include;/usr/include/gazebo-8;/usr/include/bullet;/usr/include/simbody;/usr/include/sdformat-5.3;/usr/include/ignition/math3;/usr/include/OGRE;/usr/include/OGRE/Terrain;/usr/include/OGRE/Paging;/usr/include/ignition/transport3;/usr/include/uuid;/usr/include/ignition/msgs0 " STREQUAL " ")
+if(NOT "/usr/include;/usr/include/gazebo-8;/usr/include/bullet;/usr/include/simbody;/usr/local/include;/usr/include/sdformat-5.3;/usr/include/ignition/math3;/usr/include/OGRE;/usr/include/OGRE/Terrain;/usr/include/OGRE/Paging;/usr/include/ignition/transport3;/usr/include/uuid;/usr/include/ignition/msgs0 " STREQUAL " ")
   set(uol_cmp9767m_base_INCLUDE_DIRS "")
-  set(_include_dirs "/usr/include;/usr/include/gazebo-8;/usr/include/bullet;/usr/include/simbody;/usr/include/sdformat-5.3;/usr/include/ignition/math3;/usr/include/OGRE;/usr/include/OGRE/Terrain;/usr/include/OGRE/Paging;/usr/include/ignition/transport3;/usr/include/uuid;/usr/include/ignition/msgs0")
+  set(_include_dirs "/usr/include;/usr/include/gazebo-8;/usr/include/bullet;/usr/include/simbody;/usr/local/include;/usr/include/sdformat-5.3;/usr/include/ignition/math3;/usr/include/OGRE;/usr/include/OGRE/Terrain;/usr/include/OGRE/Paging;/usr/include/ignition/transport3;/usr/include/uuid;/usr/include/ignition/msgs0")
   if(NOT " " STREQUAL " ")
     set(_report "Check the issue tracker '' and consider creating a ticket if the problem has not been reported yet.")
   elseif(NOT " " STREQUAL " ")
@@ -131,7 +131,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel/lib;/opt/ros/kinetic/lib)
+    foreach(path /home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel/lib;/home/computing/RoboticsM/CMP9767M-master/catkin_ws/devel/lib;/opt/ros/kinetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
