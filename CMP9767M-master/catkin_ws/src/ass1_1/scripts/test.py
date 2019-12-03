@@ -61,7 +61,6 @@ class Weed_Killer:
 		#Variables
 		self.stat = -1
 		o = 6.5
-		d = 3.25
 		self.path = [[o,0.25,0,1],[-o,0.25,0,1],[-o,-0.75,0,1],[o,-0.75,0,1],[o,-2.75,0,1],[-o,-2.75,0,1],[-o,-3.75,0,1],[o,-3.75,0,1]]
 		sleep(2)
 		self.main()
@@ -93,7 +92,7 @@ class Weed_Killer:
 					break;
 				elif self.stat == 4:
 					break;
-				elif(time()-timer > 150):
+				elif(time()-timer > 500):
 					break;
 				elif self.stat == -1:
 					print("Status list empty")
@@ -101,11 +100,15 @@ class Weed_Killer:
 			print("Status not published")
 ############################################################			
 	def waiter(self):
+		timer = time()
+		sleep(1)
 		try:
 			while True:
 				cv2.waitKey(1)
 				if self.stat == 3:
 					break;
+				elif self.stat == -1:
+					print("Status list empty")
 		except:
 			print("Status not published")
 ######################################################################################################
@@ -121,16 +124,16 @@ class Weed_Killer:
 		co_move.goal.target_pose.pose.orientation.w = w
 		#co_move.goal.target_pose.header.stamp = rospy.Time.now()
 		co_move.goal.target_pose.header.frame_id = 'map'
-		#co_move.goal.target_pose.header.seq = 102
+		co_move.goal.target_pose.header.seq = 102
 		self.movePub.publish(co_move)
 #######################################################################################################################################
         #relative move_base system... activated when a colour in mask is present
-	def rel_move(self, x, y):
+	def rel_move(self, x, y, z,w):
 		colour_found = MoveBaseActionGoal()
 		colour_found.goal.target_pose.pose.position.x = x
 		colour_found.goal.target_pose.pose.position.y = y
-		colour_found.goal.target_pose.pose.orientation.z = 0
-		colour_found.goal.target_pose.pose.orientation.w = 1
+		colour_found.goal.target_pose.pose.orientation.z = z
+		colour_found.goal.target_pose.pose.orientation.w = w
 		colour_found.goal.target_pose.header.stamp = rospy.Time.now()
 		colour_found.goal.target_pose.header.frame_id = 'thorvald_001/base_link'
 		colour_found.goal.target_pose.header.seq = 101		
@@ -157,43 +160,50 @@ class Weed_Killer:
 		BWE = cv2.erode(BFill, kernel10, iterations=1)
 		BRe = self.imreconstruct(BWE, BFill, kernel2)		
 		
-		WeedMask = (BFill - BRe)
+		Cabbage = (BFill - BRe)
 		
-		basil = cv2.inRange(hsv, numpy.array([45, 0, 0]), numpy.array([130, 255, 255]))
+		basil_filt = cv2.inRange(hsv, numpy.array([45, 0, 0]), numpy.array([130, 255, 255]))
 		
-		mask = basil
-		mask = numpy.array(self.imfill(mask), dtype='uint8')
-		mask = cv2.erode(mask,kernel)
-		WeedMask = cv2.erode(WeedMask,kernel)
+		Basil = basil_filt
+		Basil = numpy.array(self.imfill(Basil), dtype='uint8')
+		Basil = cv2.erode(Basil,kernel)
+		Cabbage = cv2.erode(Cabbage,kernel)
 		
-		maskd = cv2.bitwise_and(image, image, mask=mask)
-		Re = cv2.bitwise_and(image, image, mask=WeedMask)
-		
-		mask[((mask.shape[0]/2)-10):((mask.shape[0]/2)+10), :] = 255
+		bas_mask = cv2.bitwise_and(image, image, mask=Basil)
+		cab_mas = cv2.bitwise_and(image, image, mask=Cabbage) 
 		
 		
-		self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(maskd,(720, 450)), encoding = 'bgr8'))
-		self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(Re,(720, 450)), encoding = 'bgr8'))
-		self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
+		#self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(bas_mask,(720, 450)), encoding = 'bgr8'))
+		#self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(cab_mas,(720, 450)), encoding = 'bgr8'))
+		#self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
 
-		a = numpy.sum(mask[((mask.shape[0]/2)-10):((mask.shape[0]/2)+10), (mask.shape[1]/3):((mask.shape[1]/3)*2)])
-		b = numpy.sum(WeedMask[((WeedMask.shape[0]/2)-10):((WeedMask.shape[0]/2)+10), (WeedMask.shape[1]/3):((WeedMask.shape[1]/3)*2)])
+		a = numpy.sum(Basil[((Basil.shape[0]/2)-20):((Basil.shape[0]/2)+20), (Basil.shape[1]/3):((Basil.shape[1]/3)*2)])
+		b = numpy.sum(Cabbage[((Cabbage.shape[0]/2)-20):((Cabbage.shape[0]/2)+20), (Cabbage.shape[1]/3):((Cabbage.shape[1]/3)*2)])
 		
 		if a > b:
 		#sum of cabbage is greater than basil:
-			print('cabbage')
-			self.finder(WeedMask)
+			print("cabbage")
+#			print("a = " + str(a))
+	#		print("b = " + str(b))
+			self.finder(Cabbage)
 		else:
-			print('basil')
-			self.finder(mask)
+			print("basil")
+			#print("a = " + str(a))
+#			print("b = " + str(b))
+			self.finder(Basil)
 	#continue moving
-			
-		self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(maskd,(720, 450)), encoding = 'bgr8'))
-		self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(Re,(720, 450)), encoding = 'bgr8'))
+		
+		bas_mask[0:h/2-50,:]=0
+		bas_mask[h/2+50:h,:]=0
+		cab_mas[0:h/2-50,:]=0
+		cab_mas[h/2+50:h,:]=0
+		
+		self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(bas_mask,(720, 450)), encoding = 'bgr8'))
+		self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(cab_mas,(720, 450)), encoding = 'bgr8'))
 		self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
 #		cv2.imshow("image", cv2.resize(image,(720, 450)))
 	#	cv2.imshow("Basil", cv2.resize(masked_image,(720, 450)))
-#		cv2.imshow("Cabbage", cv2.resize(Re,(720, 450)))
+#		cv2.imshow("Cabbage", cv2.resize(cab_mas,(720, 450)))
 	#	cv2.waitKey(3)
 ######################################################################################################
 
@@ -237,32 +247,42 @@ class Weed_Killer:
 		return RET		
 ######################################################################################################
 
-	def finder(self, mask):
+	def finder(self, masks):
 		t = Twist()	
+		r = rospy.Rate(1)
 		#if the mask at center equals 1
-		if numpy.any(mask[((mask.shape[0]/2)-10),((mask.shape[0]/2)+10)]) == 1:
+		if numpy.any(masks[((masks.shape[0]/2)-10),((masks.shape[0]/2)+10)]) == 1:
+			print(self.cGoal)
 			self.canPub.publish(GoalID())#	then move forward 2
 			sleep(0.5)
-			t.linear.x = 2
+			t.linear.x = 0.5
 			self.velPub.publish(t)
-			sleep(1)
-			self.spray()#james said its this way
-			t.linear.x = 0
-			self.velPub.publish(t)
-			sleep(0.5)
-			t.linear.x = -1
-			self.velPub.publish(t)
-			sleep(1)
-			#	spray 
-			# move back 1
-			#self.rel_move(-1,0)
+			print("forwards")
+			r.sleep()
 			#sleep(1)
+			self.spray()#james said its this way
+			t.linear.x = -1
+			r.sleep()
+			self.velPub.publish(t)
+			print("backwards")
+			r.sleep()
 			self.moveg(self.cGoal)
-			#	spray
-			#	self.spray() #james said its this way
+	
+	def finderx(self, mask):	
+		if numpy.any(mask[((mask.shape[0]/2)-10),((mask.shape[0]/2)+10)]) == 1:
+			print(self.cGoal)
+			self.canPub.publish(GoalID())#	then move forward 2
+			sleep(0.5)
+			#
+			self.rel_move(1,0,self.cGoal[2],self.cGoal[3])
+			self.wait()
+			#spray
+			self.spray() #james said its this way
 			# move back 1
-			#	t.linear.x = -1
-			#	self.velPub.publish(t)
+			self.rel_move(-0.5,0,self.cGoal[2],self.cGoal[3])
+			self.wait()
+			self.moveg(self.cGoal)
+			# sleep(1)
 ######################################################################################################
 	
 	def main(self):
