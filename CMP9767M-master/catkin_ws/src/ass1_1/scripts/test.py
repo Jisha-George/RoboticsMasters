@@ -16,15 +16,17 @@ import numpy
 import cv2
 import cv_bridge
 import rospy
+import tf
 #specific imports
 from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseActionFeedback
 from nav_msgs.msg import Odometry, OccupancyGrid
 from actionlib_msgs.msg import GoalStatusArray, GoalID
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, LaserScan
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PoseStamped
 from time import sleep, time
 from std_srvs.srv import Empty
+from image_geometry import PinholeCameraModel
 
 ######################################################################################################
 
@@ -55,9 +57,11 @@ class Weed_Killer:
 		self.cabPub = rospy.Publisher('/images/cabbage', Image, queue_size = 1)
 		self.imgPub = rospy.Publisher('/images/image', Image, queue_size = 1)
 		self.canPub = rospy.Publisher('/move_base/cancel',GoalID, queue_size = 1)
+
 		
 		self.spray = rospy.ServiceProxy('/thorvald_001/spray', Empty)
-		
+		self.tfLis = tf.TransformListener()		
+		self.camera_model = PinholeCameraModel()
 		#Variables
 		self.stat = -1
 		o = 6.5
@@ -171,27 +175,19 @@ class Weed_Killer:
 		
 		bas_mask = cv2.bitwise_and(image, image, mask=Basil)
 		cab_mas = cv2.bitwise_and(image, image, mask=Cabbage) 
-		
-		
-		#self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(bas_mask,(720, 450)), encoding = 'bgr8'))
-		#self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(cab_mas,(720, 450)), encoding = 'bgr8'))
-		#self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
 
-		a = numpy.sum(Basil[((Basil.shape[0]/2)-30):((Basil.shape[0]/2)+30), (Basil.shape[1]/3):((Basil.shape[1]/3)*2)])
-		b = numpy.sum(Cabbage[((Cabbage.shape[0]/2)-30):((Cabbage.shape[0]/2)+30), (Cabbage.shape[1]/3):((Cabbage.shape[1]/3)*2)])
+		a = numpy.sum(Basil[((Basil.shape[0]/2)-50):((Basil.shape[0]/2)+50), (Basil.shape[1]/3):((Basil.shape[1]/3)*2)])
+		b = numpy.sum(Cabbage[((Cabbage.shape[0]/2)-50):((Cabbage.shape[0]/2)+50), (Cabbage.shape[1]/3):((Cabbage.shape[1]/3)*2)])
 		
 		if a > b:
 		#sum of cabbage is greater than basil:
 			print("cabbage")
-#			print("a = " + str(a))
-	#		print("b = " + str(b))
 			self.finder(Cabbage)
 		else:
 			print("basil")
 			#print("a = " + str(a))
 #			print("b = " + str(b))
 			self.finder(Basil)
-	#continue moving
 		
 		bas_mask[0:h/2-50,:]=0
 		bas_mask[h/2+50:h,:]=0
@@ -251,12 +247,12 @@ class Weed_Killer:
 		t = Twist()	
 		r = rospy.Rate(10)
 		#if the mask at center equals 1
-		if numpy.any(masks[((masks.shape[0]/2)-30),((masks.shape[0]/2)+30)]) == 1:
+		if numpy.any(masks[((masks.shape[0]/2)-50),((masks.shape[0]/2)+50)]) == 1:
 			print(self.cGoal)
 			self.canPub.publish(GoalID())#	then move forward 2
 
 			sleep(5)
-			t.linear.x = 2
+			t.linear.x = 1
 			self.velPub.publish(t)
 
 			print("forwards")
@@ -272,7 +268,7 @@ class Weed_Killer:
 			self.moveg(self.cGoal)
 	
 	def finderx(self, mask):	
-		if numpy.any(mask[((mask.shape[0]/2)-30),((mask.shape[0]/2)+30)]) == 1:
+		if numpy.any(mask[((mask.shape[0]/2)-50),((mask.shape[0]/2)+50)]) == 1:
 			print(self.cGoal)
 			self.canPub.publish(GoalID())#	then move forward 2
 			sleep(0.5)
