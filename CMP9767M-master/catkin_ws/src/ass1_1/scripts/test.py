@@ -26,7 +26,6 @@ from sensor_msgs.msg import Image, LaserScan
 from geometry_msgs.msg import Twist, PoseStamped
 from time import sleep, time
 from std_srvs.srv import Empty
-from image_geometry import PinholeCameraModel
 
 ######################################################################################################
 
@@ -42,7 +41,7 @@ class Weed_Killer:
 	def __init__(self):
 
 		self.bridge = cv_bridge.CvBridge()
-		self.cGoal = 0
+		self.cGoal = [0,0,0,1]
 		self.ab = True
 		#Subscribers
 		self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
@@ -51,21 +50,19 @@ class Weed_Killer:
 		self.statSub = rospy.Subscriber('/move_base/status', GoalStatusArray, self.status)
 		
 		#Publishers
-		self.velPub = rospy.Publisher('thorvald_001/teleop_joy/cmd_vel', Twist, queue_size=1)
+		self.velPub = rospy.Publisher('thorvald_001/teleop_joy/cmd_vel', Twist, queue_size=10)
 		self.movePub = rospy.Publisher('/move_base/goal', MoveBaseActionGoal, queue_size = 1)
 		self.basPub = rospy.Publisher('/images/basil', Image, queue_size = 1)
 		self.cabPub = rospy.Publisher('/images/cabbage', Image, queue_size = 1)
 		self.imgPub = rospy.Publisher('/images/image', Image, queue_size = 1)
 		self.canPub = rospy.Publisher('/move_base/cancel',GoalID, queue_size = 1)
 
-		
+		self.seq_id = 0
 		self.spray = rospy.ServiceProxy('/thorvald_001/spray', Empty)
-		self.tfLis = tf.TransformListener()		
-		self.camera_model = PinholeCameraModel()
 		#Variables
 		self.stat = -1
-		o = 6.5
-		self.path = [[o,0.25,0,1],[-o,0.25,0,1],[-o,-0.75,0,1],[o,-0.75,0,1],[o,-2.75,0,1],[-o,-2.75,0,1],[-o,-3.75,0,1],[o,-3.75,0,1]]
+		o = 6.5#[o,-2.75,0,1],[-o,-2.75,0,1],[-o,-3.75,0,1],[o,-3.75,0,1]
+		self.path = [[o,0.25,0,1],[-o,0.25,0,1],[-o,-0.75,0,1],[o,-0.75,0,1],]
 		sleep(2)
 		self.main()
 				
@@ -108,7 +105,6 @@ class Weed_Killer:
 		sleep(1)
 		try:
 			while True:
-				cv2.waitKey(1)
 				if self.stat == 3:
 					break;
 				elif self.stat == -1:
@@ -126,21 +122,23 @@ class Weed_Killer:
 		co_move.goal.target_pose.pose.position.y = y
 		co_move.goal.target_pose.pose.orientation.z = z
 		co_move.goal.target_pose.pose.orientation.w = w
-		#co_move.goal.target_pose.header.stamp = rospy.Time.now()
+		co_move.goal.target_pose.header.stamp = rospy.Time.now()
 		co_move.goal.target_pose.header.frame_id = 'map'
 		co_move.goal.target_pose.header.seq = 102
+		self.seq_id = 102
 		self.movePub.publish(co_move)
 #######################################################################################################################################
         #relative move_base system... activated when a colour in mask is present
-	def rel_move(self, x, y, z,w):
+	def rel_move(self, z, w):
 		colour_found = MoveBaseActionGoal()
-		colour_found.goal.target_pose.pose.position.x = x
-		colour_found.goal.target_pose.pose.position.y = y
+#		colour_found.goal.target_pose.pose.position.x = x
+#		colour_found.goal.target_pose.pose.position.y = y
 		colour_found.goal.target_pose.pose.orientation.z = z
 		colour_found.goal.target_pose.pose.orientation.w = w
 		colour_found.goal.target_pose.header.stamp = rospy.Time.now()
-		colour_found.goal.target_pose.header.frame_id = 'thorvald_001/base_link'
+		colour_found.goal.target_pose.header.frame_id = 'map' #'thorvald_001/base_link'
 		colour_found.goal.target_pose.header.seq = 101		
+		self.seq_id = 101
 		self.movePub.publish(colour_found)
 ######################################################################################################
 
@@ -179,15 +177,6 @@ class Weed_Killer:
 		a = numpy.sum(Basil[((Basil.shape[0]/2)-50):((Basil.shape[0]/2)+50), (Basil.shape[1]/3):((Basil.shape[1]/3)*2)])
 		b = numpy.sum(Cabbage[((Cabbage.shape[0]/2)-50):((Cabbage.shape[0]/2)+50), (Cabbage.shape[1]/3):((Cabbage.shape[1]/3)*2)])
 		
-		if a > b:
-		#sum of cabbage is greater than basil:
-			print("cabbage")
-			self.finder(Cabbage)
-		else:
-			print("basil")
-			#print("a = " + str(a))
-#			print("b = " + str(b))
-			self.finder(Basil)
 		
 		bas_mask[0:h/2-50,:]=0
 		bas_mask[h/2+50:h,:]=0
@@ -197,6 +186,18 @@ class Weed_Killer:
 		self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(bas_mask,(720, 450)), encoding = 'bgr8'))
 		self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(cab_mas,(720, 450)), encoding = 'bgr8'))
 		self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
+		
+		
+		if a > b:
+		#sum of cabbage is greater than basil:
+			#print("cabbage")
+			self.finder(Cabbage)
+		else:
+			#print("basil")
+	#		print("a = " + str(a))
+#			print("b = " + str(b))
+			self.finder(Basil)
+			
 #		cv2.imshow("image", cv2.resize(image,(720, 450)))
 	#	cv2.imshow("Basil", cv2.resize(masked_image,(720, 450)))
 #		cv2.imshow("Cabbage", cv2.resize(cab_mas,(720, 450)))
@@ -243,54 +244,83 @@ class Weed_Killer:
 		return RET		
 ######################################################################################################
 
-	def finder(self, masks):
-		t = Twist()	
-		r = rospy.Rate(10)
+#	def finder(self, masks):
+	#	t = Twist()	
+#		r = rospy.Rate(10)
 		#if the mask at center equals 1
-		if numpy.any(masks[((masks.shape[0]/2)-50),((masks.shape[0]/2)+50)]) == 1:
-			print(self.cGoal)
-			self.canPub.publish(GoalID())#	then move forward 2
+#		if numpy.any(masks[((masks.shape[0]/2)-50),((masks.shape[0]/2)+50)]) == 1:
+	#		print(self.cGoal)
+		#	self.canPub.publish(GoalID())#	then move forward 2
+#
+	#		sleep(5)
+		#	t.linear.x = 1
+			#self.velPub.publish(t)
 
-			sleep(5)
+#			print("forwards")
+	#		sleep(1)
+		#	self.spray()#james said its this way
+
+#			sleep(1)
+	#		t.linear.x = -1
+		#	self.velPub.publish(t)
+
+#			print("backwards")
+	#		sleep(1)
+		#	self.moveg(self.cGoal)
+	
+	def finder(self, mask):
+		t = Twist()		
+		#r = rospy.Rate(2)
+		if numpy.sum(mask[((mask.shape[0]/2)-50):((mask.shape[0]/2)+50), (mask.shape[1]/3):((mask.shape[1]/3)*2)]) > 150:
+
+		
+			print(self.cGoal)
+			self.canPub.publish(GoalID())
+			sleep(0.5)
+		
+			print("forwards")
+	#		self.rel_move(self.cGoal[2],self.cGoal[3])#	move forward 2
+	#		self.wait()
 			t.linear.x = 1
 			self.velPub.publish(t)
-
-			print("forwards")
 			sleep(1)
-			self.spray()#james said its this way
-
-			sleep(1)
-			t.linear.x = -1
+			t.linear.x = 1
 			self.velPub.publish(t)
-
-			print("backwards")
-			sleep(1)
-			self.moveg(self.cGoal)
-	
-	def finderx(self, mask):	
-		if numpy.any(mask[((mask.shape[0]/2)-50),((mask.shape[0]/2)+50)]) == 1:
-			print(self.cGoal)
-			self.canPub.publish(GoalID())#	then move forward 2
-			sleep(0.5)
-			#
-			self.rel_move(1,0,self.cGoal[2],self.cGoal[3])
-			self.wait()
-			#spray
+			sleep(2)
+			
+			print("spray")
 			self.spray() #james said its this way
-			# move back 1
-			self.rel_move(-0.5,0,self.cGoal[2],self.cGoal[3])
-			self.wait()
+			
+			sleep(2)
+			print("backwards")  						#self.rel_move(-0.3,0,self.cGoal[2],self.cGoal[3])
+#			self.rel_move(self.cGoal[2],self.cGoal[3])#	move forward 2
+	#		self.wait()
+			t.linear.x = -0.5
+			self.velPub.publish(t)
+			sleep(0.5)
+			t.linear.x = -0.5
+			self.velPub.publish(t)
+			sleep(1)
+			#t.linear.x = -5
+			#self.velPub.publish(t)
+			#sleep(10)
+			
+			print("goal")
 			self.moveg(self.cGoal)
-			# sleep(1)
+			
 ######################################################################################################
 	
 	def main(self):
-		i = 0
 		while not(rospy.is_shutdown()):
-			for i in range(len(self.path)):
+			i = 0
+			while i < len(self.path):
 				self.cGoal = self.path[i]
 				self.moveg(self.cGoal)
 				self.waiter()
+				if self.seq_id == 101:
+					print(self.seq_id)
+					continue
+				i = i+1
 
 ######################################################################################################
 
