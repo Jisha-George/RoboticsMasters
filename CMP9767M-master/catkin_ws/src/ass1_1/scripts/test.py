@@ -16,16 +16,19 @@ import numpy
 import cv2
 import cv_bridge
 import rospy
-import tf
+
 #specific imports
+from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseActionFeedback
-from nav_msgs.msg import Odometry, OccupancyGrid
 from actionlib_msgs.msg import GoalStatusArray, GoalID
+from nav_msgs.msg import Odometry, OccupancyGrid
+from geometry_msgs.msg import Twist, PoseStamped
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, LaserScan
-from geometry_msgs.msg import Twist, PoseStamped
-from time import sleep, time
 from std_srvs.srv import Empty
+from time import sleep, time
+
+
 
 ######################################################################################################
 
@@ -44,11 +47,10 @@ class Weed_Killer:
 		self.cGoal = [0,0,0,1]
 		self.ab = True
 		#Subscribers
-		self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
-		self.scanSub = rospy.Subscriber('/thorvald_001/scan', LaserScan, self.scanning)
-	# self.odomSub = rospy.Subscriber('/move_base/feedback', MoveBaseActionFeedback, self.odom)
-		self.statSub = rospy.Subscriber('/move_base/status', GoalStatusArray, self.status)
 		
+		self.scanSub = rospy.Subscriber('/thorvald_001/scan', LaserScan, self.scanning)
+		self.statSub = rospy.Subscriber('/move_base/status', GoalStatusArray, self.status)
+		self.odomSub = rospy.Subscriber('/move_base/feedback', MoveBaseActionFeedback, self.odom)
 		#Publishers
 		self.velPub = rospy.Publisher('thorvald_001/teleop_joy/cmd_vel', Twist, queue_size=10)
 		self.movePub = rospy.Publisher('/move_base/goal', MoveBaseActionGoal, queue_size = 1)
@@ -61,11 +63,19 @@ class Weed_Killer:
 		self.spray = rospy.ServiceProxy('/thorvald_001/spray', Empty)
 		#Variables
 		self.stat = -1
-		o = 6.5#[o,-2.75,0,1],[-o,-2.75,0,1],[-o,-3.75,0,1],[o,-3.75,0,1]
-		self.path = [[o,0.25,0,1],[-o,0.25,0,1],[-o,-0.75,0,1],[o,-0.75,0,1],]
+		o = 6.5 #
+		self.path = [[o,0.25,1,0],[-o,0.25,1,0],[-o,-0.75,0,1],[o,-0.75,0,1],[o,-2.75,1,0],[-o,-2.75,1,0],[-o,-3.75,0,1],[o,-3.75,0,1]]
+		print(self.path[0][0],self.path[0][1],self.path[0][2],self.path[0][3])
 		sleep(2)
+		self.move(self.path[0][0],self.path[0][1],self.path[0][2],self.path[0][3])
+		self.wait()
+		self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
 		self.main()
-				
+#######################################################################################################################################
+        #gets information of the position and orientation from move_base/feedback (more accurate and reliable than /odom)
+	def odom(self, msg):
+		self.pos = [msg.feedback.base_position.pose.position.x, msg.feedback.base_position.pose.position.y]
+			
 #######################################################################################################################################
         #checks the status message given by the move_base/status topic
 	def status(self, msg):
@@ -88,12 +98,11 @@ class Weed_Killer:
 		sleep(1)
 		try:
 			while True:
-				cv2.waitKey(1)
 				if self.stat == 3:
 					break;
 				elif self.stat == 4:
 					break;
-				elif(time()-timer > 500):
+				elif(time()-timer > 60):
 					break;
 				elif self.stat == -1:
 					print("Status list empty")
@@ -129,17 +138,29 @@ class Weed_Killer:
 		self.movePub.publish(co_move)
 #######################################################################################################################################
         #relative move_base system... activated when a colour in mask is present
-	def rel_move(self, z, w):
-		colour_found = MoveBaseActionGoal()
-#		colour_found.goal.target_pose.pose.position.x = x
-#		colour_found.goal.target_pose.pose.position.y = y
-		colour_found.goal.target_pose.pose.orientation.z = z
-		colour_found.goal.target_pose.pose.orientation.w = w
-		colour_found.goal.target_pose.header.stamp = rospy.Time.now()
-		colour_found.goal.target_pose.header.frame_id = 'map' #'thorvald_001/base_link'
-		colour_found.goal.target_pose.header.seq = 101		
-		self.seq_id = 101
-		self.movePub.publish(colour_found)
+	def rel_move(self, z, w,seq=101):
+	
+	
+	#	_,_,yaw = euler_from_quaternion([0,0,z,w])
+	#	deg = (yaw*180)/numpy.pi
+		
+#		_,_,yaw = euler_from_quaternion([0,0,self.ori[0], self.ori[1]])
+	#	deg2 = (yaw*180)/numpy.pi
+	#	
+	#	err = deg2 - deg
+	#	orin = quaternion_from_euler(0,0,err)
+	
+		twister = MoveBaseActionGoal()
+
+		twister.goal.target_pose.pose.position.x = self.pos[0]
+		twister.goal.target_pose.pose.position.y = self.pos[1]
+		twister.goal.target_pose.pose.orientation.z = z
+		twister.goal.target_pose.pose.orientation.w = w
+		twister.goal.target_pose.header.stamp = rospy.Time.now()
+		twister.goal.target_pose.header.frame_id = 'map'
+		twister.goal.target_pose.header.seq = seq
+		self.seq_id = seq
+		self.movePub.publish(twister)
 ######################################################################################################
 
 	def scanning(self, msg):
@@ -148,60 +169,51 @@ class Weed_Killer:
 ######################################################################################################
 	
 	def image_callback(self, msg):
-
+		#print("1")
+		
+		
 		image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
 		image = cv2.resize(image,(480, 270))
-
-		hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-		
+		#print("2")
+		hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)		
 		h, w, d = image.shape
-
+	#	print("3")
 		_, thresh = cv2.threshold(hsv[:,:,0].astype(float)/180, 0.2,1, cv2.THRESH_BINARY)
-		
+	#	print("4")		
 		BFill = numpy.array(self.imfill(thresh), dtype='uint8')
 		BWE = cv2.erode(BFill, kernel10, iterations=1)
 		BRe = self.imreconstruct(BWE, BFill, kernel2)		
-		
+	#	print("5")
 		Cabbage = (BFill - BRe)
-		
 		basil_filt = cv2.inRange(hsv, numpy.array([45, 0, 0]), numpy.array([130, 255, 255]))
-		
+	#	print("6")
 		Basil = basil_filt
 		Basil = numpy.array(self.imfill(Basil), dtype='uint8')
 		Basil = cv2.erode(Basil,kernel)
 		Cabbage = cv2.erode(Cabbage,kernel)
-		
+#		print("7")
 		bas_mask = cv2.bitwise_and(image, image, mask=Basil)
 		cab_mas = cv2.bitwise_and(image, image, mask=Cabbage) 
-
+	#	print("8")
 		a = numpy.sum(Basil[((Basil.shape[0]/2)-50):((Basil.shape[0]/2)+50), (Basil.shape[1]/3):((Basil.shape[1]/3)*2)])
 		b = numpy.sum(Cabbage[((Cabbage.shape[0]/2)-50):((Cabbage.shape[0]/2)+50), (Cabbage.shape[1]/3):((Cabbage.shape[1]/3)*2)])
-		
-		
+		#print("9")
 		bas_mask[0:h/2-50,:]=0
 		bas_mask[h/2+50:h,:]=0
 		cab_mas[0:h/2-50,:]=0
 		cab_mas[h/2+50:h,:]=0
-		
+		#print("10")
 		self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(bas_mask,(720, 450)), encoding = 'bgr8'))
 		self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(cab_mas,(720, 450)), encoding = 'bgr8'))
 		self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
+		#print("11")
 		
-		
+		#sum of cabbage is greater than basil
 		if a > b:
-		#sum of cabbage is greater than basil:
-			#print("cabbage")
 			self.finder(Cabbage)
 		else:
-			#print("basil")
-	#		print("a = " + str(a))
-#			print("b = " + str(b))
 			self.finder(Basil)
 			
-#		cv2.imshow("image", cv2.resize(image,(720, 450)))
-	#	cv2.imshow("Basil", cv2.resize(masked_image,(720, 450)))
-#		cv2.imshow("Cabbage", cv2.resize(cab_mas,(720, 450)))
-	#	cv2.waitKey(3)
 ######################################################################################################
 
 	def imreconstruct(self, img, mask, st): #img is dilated
@@ -244,70 +256,57 @@ class Weed_Killer:
 		return RET		
 ######################################################################################################
 
-#	def finder(self, masks):
-	#	t = Twist()	
-#		r = rospy.Rate(10)
-		#if the mask at center equals 1
-#		if numpy.any(masks[((masks.shape[0]/2)-50),((masks.shape[0]/2)+50)]) == 1:
-	#		print(self.cGoal)
-		#	self.canPub.publish(GoalID())#	then move forward 2
-#
-	#		sleep(5)
-		#	t.linear.x = 1
-			#self.velPub.publish(t)
-
-#			print("forwards")
-	#		sleep(1)
-		#	self.spray()#james said its this way
-
-#			sleep(1)
-	#		t.linear.x = -1
-		#	self.velPub.publish(t)
-
-#			print("backwards")
-	#		sleep(1)
-		#	self.moveg(self.cGoal)
 	
 	def finder(self, mask):
+		#print("12")		
 		t = Twist()		
 		#r = rospy.Rate(2)
 		if numpy.sum(mask[((mask.shape[0]/2)-50):((mask.shape[0]/2)+50), (mask.shape[1]/3):((mask.shape[1]/3)*2)]) > 150:
+			
+			print("disanebla")
+			self.imgSub.unregister()
 
-		
-			print(self.cGoal)
+			print("cancle mov")
 			self.canPub.publish(GoalID())
-			sleep(0.5)
+			sleep(5)
 		
-			print("forwards")
-	#		self.rel_move(self.cGoal[2],self.cGoal[3])#	move forward 2
-	#		self.wait()
+			print("forwards")	
 			t.linear.x = 1
 			self.velPub.publish(t)
 			sleep(1)
-			t.linear.x = 1
+			t.linear.x = 0.9
 			self.velPub.publish(t)
 			sleep(2)
-			
+					
 			print("spray")
 			self.spray() #james said its this way
-			
 			sleep(2)
-			print("backwards")  						#self.rel_move(-0.3,0,self.cGoal[2],self.cGoal[3])
-#			self.rel_move(self.cGoal[2],self.cGoal[3])#	move forward 2
-	#		self.wait()
-			t.linear.x = -0.5
+				
+			print("backwards")
+			t.linear.x = -1
 			self.velPub.publish(t)
 			sleep(0.5)
-			t.linear.x = -0.5
+			t.linear.x = -0.85
 			self.velPub.publish(t)
-			sleep(1)
-			#t.linear.x = -5
-			#self.velPub.publish(t)
-			#sleep(10)
+			sleep(0.5)
 			
-			print("goal")
+			print("stop")
+			t.linear.x = 0
+			self.velPub.publish(t)
+			sleep(2)
+			
+			print("align")
+			print(self.cGoal)
+			self.rel_move(self.cGoal[2],self.cGoal[3])
+			sleep(1)
+			
+			print("reanebla")
+			self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
+			
+			print("move")
 			self.moveg(self.cGoal)
 			
+		#	print("18")			
 ######################################################################################################
 	
 	def main(self):
@@ -318,7 +317,6 @@ class Weed_Killer:
 				self.moveg(self.cGoal)
 				self.waiter()
 				if self.seq_id == 101:
-					print(self.seq_id)
 					continue
 				i = i+1
 
