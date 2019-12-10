@@ -91,9 +91,9 @@ endif()
 # flag project as catkin-based to distinguish if a find_package()-ed project is a catkin project
 set(uol_cmp9767m_base_FOUND_CATKIN_PROJECT TRUE)
 
-if(NOT "/usr/include;/usr/include/gazebo-8;/usr/include/bullet;/usr/include/simbody;/usr/include/sdformat-5.3;/usr/include/ignition/math3;/usr/include/OGRE;/usr/include/OGRE/Terrain;/usr/include/OGRE/Paging;/usr/include/ignition/transport3;/usr/include/uuid;/usr/include/ignition/msgs0 " STREQUAL " ")
+if(NOT "/usr/include;/usr/include/gazebo-8;/usr/include/bullet;/usr/include/simbody;/usr/local/include;/usr/include/sdformat-5.3;/usr/include/ignition/math3;/usr/include/OGRE;/usr/include/OGRE/Terrain;/usr/include/OGRE/Paging;/usr/include/ignition/transport3;/usr/include/uuid;/usr/include/ignition/msgs0 " STREQUAL " ")
   set(uol_cmp9767m_base_INCLUDE_DIRS "")
-  set(_include_dirs "/usr/include;/usr/include/gazebo-8;/usr/include/bullet;/usr/include/simbody;/usr/include/sdformat-5.3;/usr/include/ignition/math3;/usr/include/OGRE;/usr/include/OGRE/Terrain;/usr/include/OGRE/Paging;/usr/include/ignition/transport3;/usr/include/uuid;/usr/include/ignition/msgs0")
+  set(_include_dirs "/usr/include;/usr/include/gazebo-8;/usr/include/bullet;/usr/include/simbody;/usr/local/include;/usr/include/sdformat-5.3;/usr/include/ignition/math3;/usr/include/OGRE;/usr/include/OGRE/Terrain;/usr/include/OGRE/Paging;/usr/include/ignition/transport3;/usr/include/uuid;/usr/include/ignition/msgs0")
   if(NOT " " STREQUAL " ")
     set(_report "Check the issue tracker '' and consider creating a ticket if the problem has not been reported yet.")
   elseif(NOT " " STREQUAL " ")

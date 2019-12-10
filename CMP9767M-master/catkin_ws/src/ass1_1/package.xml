@@ -52,9 +52,25 @@
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>robot-localization</build_depend> 
+  <build_depend>amcl</build_depend> 
+  <build_depend>fake-localization</build_depend> 
+  <build_depend>carrot-planner</build_depend> 
+  <build_depend>roslint</build_depend> 
+  <build_depend>velodyne-laserscan</build_depend> 
+  <build_depend>libcap-dev</build_depend> 
+  <build_depend>velodyne-gazebo-plugins8</build_depend> 
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>robot-localization</build_export_depend> 
+  <build_export_depend>amcl</build_export_depend> 
+  <build_export_depend>fake-localization</build_export_depend> 
+  <build_export_depend>carrot-planner</build_export_depend> 
+  <build_export_depend>roslint</build_export_depend> 
+  <build_export_depend>velodyne-laserscan</build_export_depend> 
+  <build_export_depend>libcap-dev</build_export_depend> 
+  <build_export_depend>velodyne-gazebo-plugins8</build_export_depend> 
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
