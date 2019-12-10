@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <launch>
-  <arg name="robot_name" default= "thorvald_001"/>
+  <arg name="robot_name" />
   <arg name="x" default="0.0"/>
   <arg name="y" default="0.0"/>
   <arg name="tf_prefix" default="$(arg robot_name)" />
