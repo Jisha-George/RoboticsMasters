@@ -1,16 +1,3 @@
-# USE ABOVE TO CALCULATE COLOUR VALUES IN HSV
-# lower green = 50, 100, 100
-# upper green = 70, 255, 255
-
-#lower blue = 110, 100, 100
-#upper blue = 130, 255, 255
-
-#lower red = 0, 100, 100
-#upper red = 10, 255, 255
-
-#lower yellow = 20, 100, 100
-#upper yellow = 40, 255, 255
-
 #import statements
 import numpy
 import cv2
@@ -42,7 +29,8 @@ class Weed_Killer:
 	def __init__(self):
 
 		#Subscribers
-		self.scanSub = rospy.Subscriber('/thorvald_001/1/velscan_filtered', LaserScan, self.scanning)
+		self.velSub = rospy.Subscriber('/thorvald_001/2/velscan_filtered_2', LaserScan, self.Vscan)
+		self.scanSub = rospy.Subscriber('/thorvald_001/scan', LaserScan, self.scanning)
 		self.statSub = rospy.Subscriber('/move_base/status', GoalStatusArray, self.status)
 		self.odomSub = rospy.Subscriber('/move_base/feedback', MoveBaseActionFeedback, self.odom)
 		self.OdomSub = rospy.Subscriber('/thorvald_001/odometry/base_raw', Odometry, self.Odom)
@@ -62,12 +50,14 @@ class Weed_Killer:
 		self.cGoal = [0,0,0,1]
 		self.ab = True
 		self.stat = -1
-		self.dist = 0.0
+		self.dist = 0.0		
+		self.distF = 0.0		
+		self.distB = 0.0
 		self.yaw = 0
 		o = 4.5
-		self.path = [[o,-3.75,1,0],[-6.5,-3.75,1,0],[-4,-2.75,0,1],[6.5,-2.75,0,1],[6.5,-0.75,1,0],[-4,-0.75,1,0],[-4,0.25,0,1],[6.5,0.25,0,1]]
-		#self.path = [[o,0.25,1,0],[-o,0.25,1,0],[-o,-0.75,0,1],[o,-0.75,0,1],[o,-2.75,1,0],[-o,-2.75,1,0],[-o,-3.75,0,1],[o,-3.75,0,1]]
+		self.path = [[o,-3.75,1,0],[-6.5,-3.75,1,0],[-4,-2.75,0,1],[6.5,-2.75,0,1],[6.5,-0.75,1,0],[-3,-0.75,1,0],[-4,0.25,0,1],[6.5,0.25,0,1]]
 		sleep(2)
+		
 		print(self.path[0][0],self.path[0][1],self.path[0][2],self.path[0][3])
 		self.move(self.path[0][0],self.path[0][1],self.path[0][2],self.path[0][3])
 		self.wait()
@@ -106,10 +96,13 @@ class Weed_Killer:
 		try:
 			while True:
 				if self.stat == 3:
+					print("stat3")
 					break;
 				elif self.stat == 4:
+					print("stat4")
 					break;
-				elif(time()-timer > 200):
+				elif(time()-timer > 60):
+					print("timer")
 					break;
 				elif self.stat == -1:
 					print("Status list empty")
@@ -150,12 +143,12 @@ class Weed_Killer:
 		self.movePub.publish(co_move)
 #######################################################################################################################################
         #relative move_base system... activated when a colour in mask is present
-	def rel_move(self, z, w=0, seq=101):
+	def rel_move(self, x, y, seq=101):
 		twister = MoveBaseActionGoal()
-		twister.goal.target_pose.pose.position.x = 0
-		twister.goal.target_pose.pose.position.y = 0
-		twister.goal.target_pose.pose.orientation.z = z
-		twister.goal.target_pose.pose.orientation.w = w
+		twister.goal.target_pose.pose.position.x = x
+		twister.goal.target_pose.pose.position.y = y
+		twister.goal.target_pose.pose.orientation.z = 0
+		twister.goal.target_pose.pose.orientation.w = 1
 		twister.goal.target_pose.header.stamp = rospy.Time.now()
 		twister.goal.target_pose.header.frame_id = '/thorvald_001/base_link'
 		twister.goal.target_pose.header.seq = seq
@@ -163,9 +156,14 @@ class Weed_Killer:
 		self.movePub.publish(twister)
 ######################################################################################################
 
-	def scanning(self, msg):
-		self.dist = msg.ranges[:,320]
+	def Vscan(self, msg):
+		self.distF = msg.ranges[210:630]
+		self.distB = msg.ranges[631:896]
+		######################################################################################################
 
+	def scanning(self, msg):
+		self.dist = msg.ranges[200:550]
+		
 ######################################################################################################
 	
 	def image_callback(self, msg):
@@ -259,39 +257,47 @@ class Weed_Killer:
 		t = Twist()		
 		r = rospy.Rate(10)
 		print("8")
+		
 		if numpy.sum(mask[((mask.shape[0]/2)-50):((mask.shape[0]/2)+50), (mask.shape[1]/3):((mask.shape[1]/3)*2)]) > 150:
+			
 			print("9")
 			print("disanebla")
 			self.imgSub.unregister()
 			print("cancle mov")
 			self.canPub.publish(GoalID())
 			sleep(2)		
-			print("10")
-			print("forwards")	
-			t.linear.x = 1
-			self.velPub.publish(t)
-			sleep(1)
-			t.linear.x = 0.7
-			self.velPub.publish(t)
-			sleep(1)
-			t.linear.x = 0
-			self.velPub.publish(t)
-			sleep(1)
-			print("11")	
-			print("spray")
-			self.spray() #
-			sleep(2)
-			print("12")
-			print("backwards")
-			t.linear.x = -1
-			self.velPub.publish(t)
-			sleep(1)
-			t.linear.x = -0.45
-			self.velPub.publish(t)
-			sleep(1)
-			t.linear.x = 0
-			self.velPub.publish(t)
-			sleep(1)
+			print(numpy.min(self.dist))
+			
+			if numpy.amin(self.dist) > 1.1 or numpy.min(self.distF) > 1.1: #
+				print("forwards")	
+				t.linear.x = 1
+				self.velPub.publish(t)
+				sleep(1)
+				t.linear.x = 0.75
+				self.velPub.publish(t)
+				sleep(1)
+				t.linear.x = 0
+				self.velPub.publish(t)
+				sleep(1)
+				print("11")	
+				print("spray")
+				self.spray() #
+				sleep(2)
+						
+			print(numpy.min(self.distB))
+			
+			if numpy.min(self.distB) > 1.1:
+				print("backwards")
+				t.linear.x = -1
+				self.velPub.publish(t)
+				sleep(1)
+				t.linear.x = -0.45
+				self.velPub.publish(t)
+				sleep(1)
+				t.linear.x = 0
+				self.velPub.publish(t)
+				sleep(1)
+			
 			print("13")
 			print("align")
 			_,_,yaw = euler_from_quaternion([0,0,self.ori[2], self.ori[3]])
@@ -300,17 +306,19 @@ class Weed_Killer:
 			err = 0.5*(tYaw-yaw)
 			print(err)
 			print("14")
+			
 			while err > 0.01:
 				t.angular.z = err
 				if err >= numpy.pi/2:
 					t.angular.z = -err
 				self.velPub.publish(t)
-				print("15")
+
 				_,_,yaw = euler_from_quaternion([0,0,self.ori[2], self.ori[3]])
 				_,_,tYaw = euler_from_quaternion([0,0,self.cGoal[2],self.cGoal[3]])
 				err = 0.5*(tYaw-yaw)
 				print("yaw= {}  tYaw= {}  err= {}".format(yaw,tYaw, err))
 				r.sleep()
+			
 			print("16")
 			print("stop")
 			t.linear.x = 0
@@ -318,22 +326,28 @@ class Weed_Killer:
 			self.velPub.publish(t)
 			sleep(1)
 			print("17")
+			
 			print("reanebla")
 			self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
+			
 			print("18")
 			print("move")
 			self.moveg(self.cGoal)
-
-#			while self.dist > 1.1 or numpy.isnan(self.dist):
-	#			if self.stat == 4:
-		#			t.linear.x = -1
-			#		self.velPub.publish(t)
-				#	self.moveg(self.cGoal)
-#				else:
-#					break
+			self.wait()
+#			
+			if self.stat == 4:
+				if numpy.min(self.distF) > 1.1:
+					t.linear.x = 1
+					self.velPub.publish(t)
+					
+				elif numpy.min(self.distB) > 1.1:
+					t.linear.x = -1
+					self.velPub.publish(t)
+			
 		print("19")
-		print("move")
-		self.moveg(self.cGoal)			
+		print(self.cGoal)
+		self.moveg(self.cGoal)
+		sleep(5)
 ######################################################################################################
 	
 	def main(self):
@@ -345,17 +359,17 @@ class Weed_Killer:
 				self.moveg(self.cGoal)
 				self.waiter()
 				print self.cGoal
-				print("1")
+				print("ghhh")
 				if self.seq_id == 101:
 					print(self.seq_id, self.cGoal)
 					self.canPub.publish(GoalID())
-					print("1")
+					print("po")
 					continue
 							
 				elif self.seq_id == 103:
 					print(self.seq_id, self.cGoal)
 					self.canPub.publish(GoalID())
-					print("1")
+					print("mjn")
 					continue
 					
 				i = i+1
