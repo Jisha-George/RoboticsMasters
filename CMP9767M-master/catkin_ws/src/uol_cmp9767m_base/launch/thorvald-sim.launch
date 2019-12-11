@@ -29,7 +29,7 @@
     <arg name="x" value="-5.0" />
   </include>
 
-  <include file="$(find ass1_1)/launch/mapping.launch"/>
+ <!-- <include file="$(find ass1_1)/launch/mapping.launch"/> -->
 
   <group if="$(arg world_tf)">
     <node 

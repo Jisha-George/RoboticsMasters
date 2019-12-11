@@ -28,8 +28,6 @@ from sensor_msgs.msg import Image, LaserScan
 from std_srvs.srv import Empty
 from time import sleep, time
 
-
-
 ######################################################################################################
 
 #kernel size for eroding the mask (to get rid of the small pixels in the mask)
@@ -44,7 +42,7 @@ class Weed_Killer:
 	def __init__(self):
 
 		#Subscribers
-		self.scanSub = rospy.Subscriber('/thorvald_001/scan', LaserScan, self.scanning)
+		self.scanSub = rospy.Subscriber('/thorvald_001/1/velscan_filtered', LaserScan, self.scanning)
 		self.statSub = rospy.Subscriber('/move_base/status', GoalStatusArray, self.status)
 		self.odomSub = rospy.Subscriber('/move_base/feedback', MoveBaseActionFeedback, self.odom)
 		self.OdomSub = rospy.Subscriber('/thorvald_001/odometry/base_raw', Odometry, self.Odom)
@@ -64,13 +62,17 @@ class Weed_Killer:
 		self.cGoal = [0,0,0,1]
 		self.ab = True
 		self.stat = -1
+		self.dist = 0.0
 		self.yaw = 0
-		o = 6.5 #
-		self.path = [[o,0.25,1,0],[-o,0.25,1,0],[-o,-0.75,0,1],[o,-0.75,0,1],[o,-2.75,1,0],[-o,-2.75,1,0],[-o,-3.75,0,1],[o,-3.75,0,1]]
-		print(self.path[0][0],self.path[0][1],self.path[0][2],self.path[0][3])
+		o = 4.5
+		self.path = [[o,-3.75,1,0],[-6.5,-3.75,1,0],[-4,-2.75,0,1],[6.5,-2.75,0,1],[6.5,-0.75,1,0],[-4,-0.75,1,0],[-4,0.25,0,1],[6.5,0.25,0,1]]
+		#self.path = [[o,0.25,1,0],[-o,0.25,1,0],[-o,-0.75,0,1],[o,-0.75,0,1],[o,-2.75,1,0],[-o,-2.75,1,0],[-o,-3.75,0,1],[o,-3.75,0,1]]
 		sleep(2)
+		print(self.path[0][0],self.path[0][1],self.path[0][2],self.path[0][3])
 		self.move(self.path[0][0],self.path[0][1],self.path[0][2],self.path[0][3])
 		self.wait()
+		sleep(2)
+		print("1")
 		self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
 		self.main()
 #######################################################################################################################################
@@ -86,6 +88,7 @@ class Weed_Killer:
 	def status(self, msg):
 		try:
 			self.stat = msg.status_list[len(msg.status_list)-1].status
+			
 		except: 
 			print("Error with status")			
 	def statu2s(self, msg):
@@ -106,7 +109,7 @@ class Weed_Killer:
 					break;
 				elif self.stat == 4:
 					break;
-				elif(time()-timer > 60):
+				elif(time()-timer > 200):
 					break;
 				elif self.stat == -1:
 					print("Status list empty")
@@ -119,6 +122,11 @@ class Weed_Killer:
 		try:
 			while True:
 				if self.stat == 3:
+					break;
+#				elif (time()-timer > 60):
+	#				if self.stat == 2:
+		#				break;
+				elif self.stat == 4:
 					break;
 				elif self.stat == -1:
 					print("Status list empty")
@@ -143,9 +151,7 @@ class Weed_Killer:
 #######################################################################################################################################
         #relative move_base system... activated when a colour in mask is present
 	def rel_move(self, z, w=0, seq=101):
-	
 		twister = MoveBaseActionGoal()
-
 		twister.goal.target_pose.pose.position.x = 0
 		twister.goal.target_pose.pose.position.y = 0
 		twister.goal.target_pose.pose.orientation.z = z
@@ -158,12 +164,12 @@ class Weed_Killer:
 ######################################################################################################
 
 	def scanning(self, msg):
-		self.dist = msg.ranges[320]
+		self.dist = msg.ranges[:,320]
 
 ######################################################################################################
 	
 	def image_callback(self, msg):
-		
+		print("2")
 		image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
 		image = cv2.resize(image,(480, 270))
 
@@ -171,14 +177,14 @@ class Weed_Killer:
 		h, w, d = image.shape
 
 		_, thresh = cv2.threshold(hsv[:,:,0].astype(float)/180, 0.2,1, cv2.THRESH_BINARY)
-		
+		print("3")
 		BFill = numpy.array(self.imfill(thresh), dtype='uint8')
 		BWE = cv2.erode(BFill, kernel10, iterations=1)
 		BRe = self.imreconstruct(BWE, BFill, kernel2)		
 
 		Cabbage = (BFill - BRe)
 		basil_filt = cv2.inRange(hsv, numpy.array([45, 0, 0]), numpy.array([130, 255, 255]))
-
+		print("4")
 		Basil = basil_filt
 		Basil = numpy.array(self.imfill(Basil), dtype='uint8')
 		Basil = cv2.erode(Basil,kernel)
@@ -186,7 +192,7 @@ class Weed_Killer:
 
 		bas_mask = cv2.bitwise_and(image, image, mask=Basil)
 		cab_mas = cv2.bitwise_and(image, image, mask=Cabbage) 
-
+		print("5")
 		a = numpy.sum(Basil[((Basil.shape[0]/2)-50):((Basil.shape[0]/2)+50), (Basil.shape[1]/3):((Basil.shape[1]/3)*2)])
 		b = numpy.sum(Cabbage[((Cabbage.shape[0]/2)-50):((Cabbage.shape[0]/2)+50), (Cabbage.shape[1]/3):((Cabbage.shape[1]/3)*2)])
 
@@ -194,7 +200,7 @@ class Weed_Killer:
 		bas_mask[h/2+50:h,:]=0
 		cab_mas[0:h/2-50,:]=0
 		cab_mas[h/2+50:h,:]=0
-
+		print("6")
 		self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(bas_mask,(720, 450)), encoding = 'bgr8'))
 		self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(cab_mas,(720, 450)), encoding = 'bgr8'))
 		self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
@@ -204,7 +210,8 @@ class Weed_Killer:
 			self.finder(Cabbage)
 		else:
 			self.finder(Basil)
-			
+		
+		print("7")
 ######################################################################################################
 
 	def imreconstruct(self, img, mask, st): #img is dilated
@@ -246,101 +253,113 @@ class Weed_Killer:
 		#return not(reconstructed)
 		return RET		
 ######################################################################################################
-	#def yawfinder(self, z, w):
-	#	_,_,self.yaw = [0,0,z,w]) #
-	#	print self.yaw
-	
+
 	def finder(self, mask):
 		#print("12")		
 		t = Twist()		
 		r = rospy.Rate(10)
-		
+		print("8")
 		if numpy.sum(mask[((mask.shape[0]/2)-50):((mask.shape[0]/2)+50), (mask.shape[1]/3):((mask.shape[1]/3)*2)]) > 150:
-			
+			print("9")
 			print("disanebla")
 			self.imgSub.unregister()
-			
 			print("cancle mov")
 			self.canPub.publish(GoalID())
 			sleep(2)		
-				
+			print("10")
 			print("forwards")	
 			t.linear.x = 1
 			self.velPub.publish(t)
 			sleep(1)
-			t.linear.x = 0.8
+			t.linear.x = 0.7
 			self.velPub.publish(t)
-			sleep(2)
+			sleep(1)
 			t.linear.x = 0
 			self.velPub.publish(t)
-			sleep(0.5)
-					
+			sleep(1)
+			print("11")	
 			print("spray")
 			self.spray() #
 			sleep(2)
-				
+			print("12")
 			print("backwards")
 			t.linear.x = -1
 			self.velPub.publish(t)
-			sleep(0.5)
-			t.linear.x = -0.75
+			sleep(1)
+			t.linear.x = -0.45
 			self.velPub.publish(t)
-			sleep(0.5)
+			sleep(1)
 			t.linear.x = 0
 			self.velPub.publish(t)
-			sleep(0.5)
-			
+			sleep(1)
+			print("13")
 			print("align")
 			_,_,yaw = euler_from_quaternion([0,0,self.ori[2], self.ori[3]])
 #			_,_,yaw = euler_from_quaternion([0,0,self.pos[2], self.pos[3]])
 			_,_,tYaw = euler_from_quaternion([0,0,self.cGoal[2],self.cGoal[3]])
 			err = 0.5*(tYaw-yaw)
 			print(err)
-			
-			while err > 0.005:
+			print("14")
+			while err > 0.01:
 				t.angular.z = err
 				if err >= numpy.pi/2:
 					t.angular.z = -err
 				self.velPub.publish(t)
-			
+				print("15")
 				_,_,yaw = euler_from_quaternion([0,0,self.ori[2], self.ori[3]])
 				_,_,tYaw = euler_from_quaternion([0,0,self.cGoal[2],self.cGoal[3]])
 				err = 0.5*(tYaw-yaw)
 				print("yaw= {}  tYaw= {}  err= {}".format(yaw,tYaw, err))
 				r.sleep()
-
+			print("16")
 			print("stop")
 			t.linear.x = 0
 			t.angular.z = 0
 			self.velPub.publish(t)
 			sleep(1)
-
+			print("17")
 			print("reanebla")
 			self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
-			
+			print("18")
 			print("move")
 			self.moveg(self.cGoal)
-			
-		#	print("18")			
+
+#			while self.dist > 1.1 or numpy.isnan(self.dist):
+	#			if self.stat == 4:
+		#			t.linear.x = -1
+			#		self.velPub.publish(t)
+				#	self.moveg(self.cGoal)
+#				else:
+#					break
+		print("19")
+		print("move")
+		self.moveg(self.cGoal)			
 ######################################################################################################
 	
 	def main(self):
-			i = 0
+		while not(rospy.is_shutdown()):
+			i = 1
+			print i
 			while i < len(self.path):
 				self.cGoal = self.path[i]
 				self.moveg(self.cGoal)
 				self.waiter()
+				print self.cGoal
+				print("1")
 				if self.seq_id == 101:
 					print(self.seq_id, self.cGoal)
 					self.canPub.publish(GoalID())
+					print("1")
 					continue
+							
 				elif self.seq_id == 103:
 					print(self.seq_id, self.cGoal)
 					self.canPub.publish(GoalID())
+					print("1")
 					continue
+					
 				i = i+1
-				self.path.pop(0)
-				print(self.path)
+				print("1")
 
 ######################################################################################################
 
