@@ -1,0 +1,10 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~max_vel_x" : \b [double] robot's max forward velocity min: 0.0, default: 0.8, max: 2.0
+- \b "~max_vel_phi" : \b [double] robot's max rotational velocity min: 0.0, default: 1.2, max: 2.5
+- \b "~k_rho" : \b [double] controller gain for distance min: 0.0, default: 2.5, max: 20.0
+- \b "~k_alpha" : \b [double] controller gain for angle to face next waypoint min: 0.0, default: 4.2, max: 20.0
+- \b "~k_beta" : \b [double] controller gain for angle diff to next waypoint min: 0.0, default: 1.8, max: 20.0
+

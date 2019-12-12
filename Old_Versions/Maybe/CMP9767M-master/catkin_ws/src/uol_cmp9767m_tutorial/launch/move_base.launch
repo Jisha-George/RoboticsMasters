@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<launch>
+	<arg name="robot_name" default="thorvald_001"/>
+	<arg name="map_file" default="$(find uol_cmp9767m_base)maps/cropped.yaml"/>
+	<arg name="ring" default="0" />  
+	<arg name="resolution" default="0.007" />
+
+	<!-- map server -->
+	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/>
+
+
+	<include file="$(find uol_cmp9767m_tutorial)/launch/mapping.launch">
+		<arg name="robot_name" value="$(arg robot_name)"/>
+		<arg name="ring"  value="$(arg ring)"/>  
+		<arg name="resolution" value="$(arg resolution)"/>
+		<arg name="map_file" value="$(arg map_file)"/>
+		<arg name="gmap_enable" value="false"/>
+	</include>
+
+</launch>

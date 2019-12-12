@@ -1,0 +1,11 @@
+\subsubsection usage Usage
+\verbatim
+<node name="path_executer" pkg="path_executer" type="path_executer">
+  <param name="max_vel_x" type="double" value="0.8" />
+  <param name="max_vel_phi" type="double" value="1.2" />
+  <param name="k_rho" type="double" value="2.5" />
+  <param name="k_alpha" type="double" value="4.2" />
+  <param name="k_beta" type="double" value="1.8" />
+</node>
+\endverbatim
+

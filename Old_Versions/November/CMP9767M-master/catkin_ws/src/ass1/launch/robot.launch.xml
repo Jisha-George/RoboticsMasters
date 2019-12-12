@@ -1,0 +1,37 @@
+<launch>
+<group ns="thorvald_001">
+  <node name="gmapping" pkg="gmapping" type="slam_gmapping">
+    <param name="base_frame" value="/thorvald_001/base_link" />
+    <param name="map_frame" value="/map" />
+    <param name="odom_frame" value="/thorvald_001/odom" />
+    <param name="minimumScore" value="50" />
+    <param name="particles" value="50" />
+    <param name="linearUpdate" value="1" />
+    <param name="angularUpdate" value="0.5" /> 
+    <remap from="map" to="/map" />
+  </node>
+</group>
+</launch>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

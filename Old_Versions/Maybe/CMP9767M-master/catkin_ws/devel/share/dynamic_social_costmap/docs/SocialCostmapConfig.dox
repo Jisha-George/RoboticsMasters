@@ -1,0 +1,16 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~cutoff_amplitude" : \b [double] amplitude below which gaussian cost is cut off to 0 min: 0.0, default: 10.0, max: 255.0
+- \b "~amplitude_multiplicator" : \b [double] cost multiplication factor for gaussian amplitude min: 0.0, default: 225.0, max: 255.0
+- \b "~variance_x" : \b [double] gaussian variance in persons x direction (front) min: 0.0, default: 0.25, max: 2.0
+- \b "~variance_y" : \b [double] gaussian variance in persons y direction (sideways) min: 0.0, default: 0.2, max: 2.0
+- \b "~offset_x" : \b [double] offset of gaussian function in person's x direction (front) min: -1.0, default: 0.2, max: 1.0
+- \b "~offset_y" : \b [double] offset of gaussian function in person's y direction (sideways) min: -1.0, default: 0.0, max: 1.0
+- \b "~forbidden_radius" : \b [double] radius of area around the human with untraversible cost value min: 0.0, default: 0.3, max: 1.0
+- \b "~amplitude_time_factor" : \b [double] fraction of how much the amplitude changes with time min: -1.0, default: 0.0, max: 1.0
+- \b "~variance_time_factor" : \b [double] fraction of how much the variance changes with time min: -1.0, default: 0.0, max: 1.0
+- \b "~forbidden_radius_time_factor" : \b [double] fraction of how much the forbidden radius changes with time min: -1.0, default: 0.0, max: 1.0
+- \b "~interpolation_steps" : \b [int] amount of interpolation steps between two poses to capture the trajectory min: 0, default: 3, max: 10
+

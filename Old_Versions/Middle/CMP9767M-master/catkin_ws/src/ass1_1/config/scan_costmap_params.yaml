@@ -1,0 +1,10 @@
+local_costmap:
+  update_frequency: 5.0
+  publish_frequency: 2.0
+  rolling_window: false
+  static_map: true
+  plugins:  
+    - {name: gmapping_layer, type: "costmap_2d::StaticLayer"}
+    - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+#    - {name: dynamic_object_layer, type: "social_navigation_layer::ProxemicLayer"}

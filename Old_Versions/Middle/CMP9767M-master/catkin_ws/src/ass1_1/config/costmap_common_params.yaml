@@ -1,0 +1,26 @@
+global_frame: /map
+robot_base_frame: thorvald_001/base_link
+
+footprint: [[1, 1], [1, -1], [-1, -1], [-1, 1]]
+gmapping_layer:
+  map_topic: map
+
+inflation_layer:
+  inflation_radius: 2
+  cost_scaling_factor: 0.5
+
+obstacle_layer:
+  min_obstacle_height: 0
+  unknown_threshold: 10
+  mark_threshold: 1
+  track_unknown_space: true
+  inf_is_valid: true
+
+  observation_sources: laser_scan_sensor laser_scan_sensor0 laser_scan_sensor1 laser_scan_sensor2 laser_scan_sensor3 laser_scan_sensor12 point_cloud2_sensor
+  laser_scan_sensor: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/scan, marking: true, clearing: false}
+  laser_scan_sensor0: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/0/velscan_filtered_0, marking: true, clearing: false}
+  laser_scan_sensor1: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/1/velscan_filtered_1, marking: true, clearing: false}
+  laser_scan_sensor2: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/2/velscan_filtered_2, marking: true, clearing: false}
+  laser_scan_sensor3: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/3/velscan_filtered_3, marking: true, clearing: false}
+  laser_scan_sensor12: {sensor_frame: thorvald_001/hokuyo, data_type: LaserScan, topic: thorvald_001/12/velscan_filtered_12, marking: true, clearing: false}
+  point_cloud2_sensor: {sensor_frame: thorvald_001/hokuyo, data_type: PointCloud2, topic: thorvald_001/velodyne_points, marking: true, clearing: false}

@@ -1,4 +1,5 @@
-#import statements
+#! /usr/bin/env python
+
 import numpy
 import cv2
 import cv_bridge
@@ -32,7 +33,6 @@ class Weed_Killer:
 		self.velSub = rospy.Subscriber('/thorvald_001/2/velscan_filtered_2', LaserScan, self.Vscan)
 		self.scanSub = rospy.Subscriber('/thorvald_001/scan', LaserScan, self.scanning)
 		self.statSub = rospy.Subscriber('/move_base/status', GoalStatusArray, self.status)
-		self.odomSub = rospy.Subscriber('/move_base/feedback', MoveBaseActionFeedback, self.odom)
 		self.OdomSub = rospy.Subscriber('/thorvald_001/odometry/base_raw', Odometry, self.Odom)
 		
 		#Publishers
@@ -54,40 +54,34 @@ class Weed_Killer:
 		self.distF = 0.0		
 		self.distB = 0.0
 		self.yaw = 0
-		o = 4.5
-		self.path = [[o,-3.75,1,0],[-6.5,-3.75,1,0],[-4,-2.75,0,1],[6.5,-2.75,0,1],[6.5,-0.75,1,0],[-3,-0.75,1,0],[-4,0.25,0,1],[6.5,0.25,0,1]]
+
+		#path of the robot can be cahnged to suit co-ordinates
+		#could have been made dynamic by making the robot wander and have reactive behaviour
+		self.path = [[3.5,-3.75,1,0],[-5,-3.75,1,0],[-3.5,-2.75,0,1],[4,-2.75,0,1],[4,-0.75,1,0],[-4,-0.75,1,0],[-4,0.25,0,1],[4,0.25,0,1]]
 		sleep(2)
-		
+		#move to first co-ordinates
 		print(self.path[0][0],self.path[0][1],self.path[0][2],self.path[0][3])
 		self.move(self.path[0][0],self.path[0][1],self.path[0][2],self.path[0][3])
 		self.wait()
 		sleep(2)
-		print("1")
+		#due to the robot having a reactive behaviour then the camera subscriber has to be initalised after the robot has reached the first co-ordinate
 		self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
+		#call the main function
 		self.main()
+
 #######################################################################################################################################
-        #gets information of the position and orientation from move_base/feedback (more accurate and reliable than /odom)
-	def odom(self, msg):
-		self.pos = [msg.feedback.base_position.pose.position.x, msg.feedback.base_position.pose.position.y, msg.feedback.base_position.pose.orientation.z, msg.feedback.base_position.pose.orientation.w]
-		
+ #gets information of the position and orientation from move_base/feedback (more accurate and reliable than /odom)
+	
 	def Odom(self, msg):
 		self.ori = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
 			
 #######################################################################################################################################
         #checks the status message given by the move_base/status topic
 	def status(self, msg):
-		try:
+		try: #check if status is publishin
 			self.stat = msg.status_list[len(msg.status_list)-1].status
-			
 		except: 
-			print("Error with status")			
-	def statu2s(self, msg):
-		try:
-			self.stat = msg.status_list[len(msg.status_list)-1].status
-			self.ab = True
-		except: 
-			if self.ab == True:
-				self.ab = False
+			print("Error with status.. trying again")			
 ######################################################################################################################################
         #alternative function to sleep, waits for a success status, an aborted status or timeout
 	def wait(self):
@@ -96,18 +90,16 @@ class Weed_Killer:
 		try:
 			while True:
 				if self.stat == 3:
-					print("stat3")
 					break;
 				elif self.stat == 4:
-					print("stat4")
 					break;
 				elif(time()-timer > 60):
-					print("timer")
 					break;
 				elif self.stat == -1:
 					print("Status list empty")
 		except:
 			print("Status not published")
+
 ############################################################			
 	def waiter(self):
 		timer = time()
@@ -116,17 +108,17 @@ class Weed_Killer:
 			while True:
 				if self.stat == 3:
 					break;
-#				elif (time()-timer > 60):
-	#				if self.stat == 2:
-		#				break;
 				elif self.stat == 4:
+					break;
+				elif(time()-timer > 300):
 					break;
 				elif self.stat == -1:
 					print("Status list empty")
 		except:
 			print("Status not published")
-######################################################################################################
 
+######################################################################################################
+	#move base function which moves the robot to the given co-ordinates based on the map
 	def moveg(self, cGoal):
 		self.move(cGoal[0],cGoal[1],cGoal[2],cGoal[3])
 		
@@ -141,77 +133,64 @@ class Weed_Killer:
 		co_move.goal.target_pose.header.seq = 102
 		self.seq_id = 102
 		self.movePub.publish(co_move)
-#######################################################################################################################################
-        #relative move_base system... activated when a colour in mask is present
-	def rel_move(self, x, y, seq=101):
-		twister = MoveBaseActionGoal()
-		twister.goal.target_pose.pose.position.x = x
-		twister.goal.target_pose.pose.position.y = y
-		twister.goal.target_pose.pose.orientation.z = 0
-		twister.goal.target_pose.pose.orientation.w = 1
-		twister.goal.target_pose.header.stamp = rospy.Time.now()
-		twister.goal.target_pose.header.frame_id = '/thorvald_001/base_link'
-		twister.goal.target_pose.header.seq = seq
-		self.seq_id = seq
-		self.movePub.publish(twister)
-######################################################################################################
 
+######################################################################################################
+#scanning function for velodyne laserscan
 	def Vscan(self, msg):
 		self.distF = msg.ranges[210:630]
 		self.distB = msg.ranges[631:896]
-		######################################################################################################
-
+######################################################################################################
+#scanning function of laserscan
 	def scanning(self, msg):
 		self.dist = msg.ranges[200:550]
-		
+
 ######################################################################################################
-	
+	#image callback function to update the image everytime something changes, creates all the image object such as the mask
 	def image_callback(self, msg):
-		print("2")
+		#create the image by reading from the image subcriber
 		image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
 		image = cv2.resize(image,(480, 270))
-
+		#change to hsv
 		hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)		
 		h, w, d = image.shape
-
+		#perform image procession to extract cabbage and ground from the image
 		_, thresh = cv2.threshold(hsv[:,:,0].astype(float)/180, 0.2,1, cv2.THRESH_BINARY)
-		print("3")
 		BFill = numpy.array(self.imfill(thresh), dtype='uint8')
 		BWE = cv2.erode(BFill, kernel10, iterations=1)
 		BRe = self.imreconstruct(BWE, BFill, kernel2)		
-
 		Cabbage = (BFill - BRe)
-		basil_filt = cv2.inRange(hsv, numpy.array([45, 0, 0]), numpy.array([130, 255, 255]))
-		print("4")
-		Basil = basil_filt
+		#perform image procession to extract basil and ground from the image
+		Basil = cv2.inRange(hsv, numpy.array([45, 0, 0]), numpy.array([130, 255, 255]))
 		Basil = numpy.array(self.imfill(Basil), dtype='uint8')
 		Basil = cv2.erode(Basil,kernel)
 		Cabbage = cv2.erode(Cabbage,kernel)
-
+		#masks created for basil and cabbage
 		bas_mask = cv2.bitwise_and(image, image, mask=Basil)
 		cab_mas = cv2.bitwise_and(image, image, mask=Cabbage) 
-		print("5")
+		
+		#the sum of the binary image for basil
 		a = numpy.sum(Basil[((Basil.shape[0]/2)-50):((Basil.shape[0]/2)+50), (Basil.shape[1]/3):((Basil.shape[1]/3)*2)])
+		#the sum of the binary image for cabbage
 		b = numpy.sum(Cabbage[((Cabbage.shape[0]/2)-50):((Cabbage.shape[0]/2)+50), (Cabbage.shape[1]/3):((Cabbage.shape[1]/3)*2)])
-
+		
 		bas_mask[0:h/2-50,:]=0
 		bas_mask[h/2+50:h,:]=0
 		cab_mas[0:h/2-50,:]=0
 		cab_mas[h/2+50:h,:]=0
-		print("6")
+
+		#publish images
 		self.basPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(bas_mask,(720, 450)), encoding = 'bgr8'))
 		self.cabPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(cab_mas,(720, 450)), encoding = 'bgr8'))
 		self.imgPub.publish(self.bridge.cv2_to_imgmsg(cv2.resize(image,(720, 450)), encoding = 'bgr8'))
 		
-		#sum of cabbage is greater than basil
+		#if sum of basil is greater than cabbage
 		if a > b:
 			self.finder(Cabbage)
 		else:
 			self.finder(Basil)
-		
-		print("7")
+			
 ######################################################################################################
-
+	#function to reconstruct binary image given the original and filtered masks
 	def imreconstruct(self, img, mask, st): #img is dilated
 
 		_,mask = cv2.threshold(mask,0.5,1, cv2.THRESH_BINARY)
@@ -231,7 +210,7 @@ class Weed_Killer:
 			img_new = img
 			
 ######################################################################################################
-
+	#function to fill holes in binary images
 	def imfill(self, im_in): #swap this out to only accept binary images
 		h, w = im_in.shape[:2]
 	
@@ -251,25 +230,23 @@ class Weed_Killer:
 		#return not(reconstructed)
 		return RET		
 ######################################################################################################
-
-	def finder(self, mask):
-		#print("12")		
+ #function for when weed is found in the mask
+	def finder(self, mask):	
 		t = Twist()		
 		r = rospy.Rate(10)
-		print("8")
-		
+		#if the sum of the mask is more than 150 (if there is weed in the middle of the mask)
 		if numpy.sum(mask[((mask.shape[0]/2)-50):((mask.shape[0]/2)+50), (mask.shape[1]/3):((mask.shape[1]/3)*2)]) > 150:
 			
-			print("9")
-			print("disanebla")
+			#unregister the subscriber
 			self.imgSub.unregister()
-			print("cancle mov")
+			
+			#cancel the move base
 			self.canPub.publish(GoalID())
 			sleep(2)		
-			print(numpy.min(self.dist))
 			
+			#if there is nothing the laserscan that is less that 1 meter
 			if numpy.amin(self.dist) > 1.1 or numpy.min(self.distF) > 1.1: #
-				print("forwards")	
+				#move forwards
 				t.linear.x = 1
 				self.velPub.publish(t)
 				sleep(1)
@@ -279,15 +256,14 @@ class Weed_Killer:
 				t.linear.x = 0
 				self.velPub.publish(t)
 				sleep(1)
-				print("11")	
+				#spray
 				print("spray")
-				self.spray() #
+				self.spray()
 				sleep(2)
-						
-			print(numpy.min(self.distB))
-			
-			if numpy.min(self.distB) > 1.1:
-				print("backwards")
+
+			#if there is nothing the velodyne
+			if numpy.amin(self.distB) > 1.1:
+				#move backwards
 				t.linear.x = -1
 				self.velPub.publish(t)
 				sleep(1)
@@ -298,90 +274,57 @@ class Weed_Killer:
 				self.velPub.publish(t)
 				sleep(1)
 			
-			print("13")
-			print("align")
+			#align the robot to face forwards
+			#code adapted from ther construct how to rotate robot using feedback from odometery
 			_,_,yaw = euler_from_quaternion([0,0,self.ori[2], self.ori[3]])
-#			_,_,yaw = euler_from_quaternion([0,0,self.pos[2], self.pos[3]])
 			_,_,tYaw = euler_from_quaternion([0,0,self.cGoal[2],self.cGoal[3]])
 			err = 0.5*(tYaw-yaw)
-			print(err)
-			print("14")
-			
-			while err > 0.01:
+			while err > 0.005:
 				t.angular.z = err
 				if err >= numpy.pi/2:
 					t.angular.z = -err
 				self.velPub.publish(t)
-
+			
 				_,_,yaw = euler_from_quaternion([0,0,self.ori[2], self.ori[3]])
 				_,_,tYaw = euler_from_quaternion([0,0,self.cGoal[2],self.cGoal[3]])
 				err = 0.5*(tYaw-yaw)
-				print("yaw= {}  tYaw= {}  err= {}".format(yaw,tYaw, err))
 				r.sleep()
-			
-			print("16")
-			print("stop")
+
+			#stop the robot
 			t.linear.x = 0
 			t.angular.z = 0
 			self.velPub.publish(t)
 			sleep(1)
-			print("17")
-			
-			print("reanebla")
+
+			#enable the subscriber
 			self.imgSub = rospy.Subscriber('thorvald_001/kinect2_camera/hd/image_color_rect', Image, self.image_callback)
 			
-			print("18")
-			print("move")
+			#move to the co-ordinate
 			self.moveg(self.cGoal)
-			self.wait()
-#			
-			if self.stat == 4:
-				if numpy.min(self.distF) > 1.1:
-					t.linear.x = 1
-					self.velPub.publish(t)
-					
-				elif numpy.min(self.distB) > 1.1:
-					t.linear.x = -1
-					self.velPub.publish(t)
-			
-		print("19")
-		print(self.cGoal)
-		self.moveg(self.cGoal)
-		sleep(5)
+		
 ######################################################################################################
-	
+	#main function that controlls the waypoints
 	def main(self):
 		while not(rospy.is_shutdown()):
 			i = 1
-			print i
-			while i < len(self.path):
+			#while i is less than or equal to the length of path
+			while i <= len(self.path):
+				#initalise current goal
 				self.cGoal = self.path[i]
+				#move to current goal
 				self.moveg(self.cGoal)
+				#wait until the robot reaches the current goal
 				self.waiter()
-				print self.cGoal
-				print("ghhh")
-				if self.seq_id == 101:
-					print(self.seq_id, self.cGoal)
-					self.canPub.publish(GoalID())
-					print("po")
-					continue
-							
-				elif self.seq_id == 103:
-					print(self.seq_id, self.cGoal)
-					self.canPub.publish(GoalID())
-					print("mjn")
-					continue
-					
+				#go to next goal
 				i = i+1
-				print("1")
+				print(self.cGoal)
 
 ######################################################################################################
 
 if __name__ == '__main__':
 	cv2.startWindowThread()
 	rospy.init_node('start')
-
 	start = Weed_Killer()
 	rospy.spin()
-
 	cv2.destroyAllWindows()
+

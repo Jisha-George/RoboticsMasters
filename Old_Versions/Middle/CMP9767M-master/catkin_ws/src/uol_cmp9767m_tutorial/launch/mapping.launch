@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+
+<launch>
+	<arg name="robot_name" default="thorvald_001"/>
+	<arg name="ring" default="2" />  
+	<arg name="resolution" default="0.007" />
+	<arg name="gmap_enable" default="true"/>
+	<arg name="map_file" default="$(find uol_cmp9767m_base)maps/cropped.yaml"/>
+
+
+	<!-- map server -->
+	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/>
+
+	<!-- gmapping
+	<node name="gmapping" pkg="gmapping" type="slam_gmapping" if="$(arg gmap_enable)">
+		<remap from="scan" to="$(arg robot_name)/scan" />
+		<param name="odom_frame" type="string" value="$(arg robot_name)/odom"/>
+		<param name="base_frame" type="string" value="$(arg robot_name)/base_link"/>
+		<param name="minimumScore" value="50"/>
+	</node> -->
+
+	<!-- localization -->
+	<node name="fake_localization" pkg="fake_localization" type="fake_localization">
+	  <remap from="base_pose_ground_truth" to="$(arg robot_name)/odometry/gazebo" />
+	  <param name="odom_frame_id" type="string" value="$(arg robot_name)/odom"/>
+	  <param name="base_frame_id" type="string" value="$(arg robot_name)/base_link"/>
+	</node>   
+	
+	
+   <!--<include file="$(find uol_cmp9767m_tutorial)/launch/amcl.launch"/> -->
+		
+
+	<!-- velodyne laserscan
+	<node pkg="velodyne_laserscan" type="velodyne_laserscan_node" name="laserscan" output="screen">
+		<remap from="velodyne_points" to="$(arg robot_name)/velodyne_points"/>
+		<remap from="scan" to="$(arg robot_name)/vel/scan_$(arg ring)"/>
+		<param name="ring" value="$(arg ring)"/> 
+		<param name="resolution" value="$(arg resolution)"/>
+	</node> -->
+	<node pkg="velodyne_laserscan" type="velodyne_laserscan_node" name="laserscan_0" output="screen">
+		<remap from="velodyne_points" to="$(arg robot_name)/velodyne_points"/>
+		<remap from="scan" to="$(arg robot_name)/vel/scan_0"/>
+		<param name="ring" value="0"/> 
+		<param name="resolution" value="$(arg resolution)"/>
+	</node><node pkg="ass1_1" type="scanner.py" name="velodyne_laserscan_filtered_0" args="0" output="screen"/>
+
+	<node pkg="velodyne_laserscan" type="velodyne_laserscan_node" name="laserscan_1" output="screen">
+		<remap from="velodyne_points" to="$(arg robot_name)/velodyne_points"/>
+		<remap from="scan" to="$(arg robot_name)/vel/scan_1"/>
+		<param name="ring" value="1"/> 
+		<param name="resolution" value="$(arg resolution)"/>
+	</node><node pkg="ass1_1" type="scanner.py" name="velodyne_laserscan_filtered_1" args="1" output="screen"/>
+
+	<node pkg="velodyne_laserscan" type="velodyne_laserscan_node" name="laserscan_2" output="screen">
+		<remap from="velodyne_points" to="$(arg robot_name)/velodyne_points"/>
+		<remap from="scan" to="$(arg robot_name)/vel/scan_2"/>
+		<param name="ring" value="2"/> 
+		<param name="resolution" value="$(arg resolution)"/>
+	</node><node pkg="ass1_1" type="scanner.py" name="velodyne_laserscan_filtered_2" args="2" output="screen"/>
+
+
+
+
+
+
+	<!-- move_base -->
+	<node name="move_base" pkg="move_base" type="move_base" output="screen">
+		<remap from="odom" to="/$(arg robot_name)/odometry/base_raw"/>
+		<remap from="cmd_vel" to="/$(arg robot_name)/nav_vel"/>
+
+		<rosparam file="$(find ass1_1)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+		<rosparam file="$(find ass1_1)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+
+		<rosparam file="$(find ass1_1)/config/all_costmap_params.yaml" command="load"/>
+		<rosparam file="$(find ass1_1)/config/scan_costmap_params.yaml" command="load"/>
+
+		<rosparam file="$(find ass1_1)/config/planners.yaml" command="load"/>
+	</node>
+
+</launch>
+
+
+
+
+
+
+
+
+
+
