@@ -247,10 +247,10 @@ class Weed_Killer:
 			#if there is nothing the laserscan that is less that 1 meter
 			if numpy.amin(self.dist) > 1.1 or numpy.min(self.distF) > 1.1: #
 				#move forwards
-				t.linear.x = 1
+				t.linear.x = 0.9
 				self.velPub.publish(t)
 				sleep(1)
-				t.linear.x = 0.75
+				t.linear.x = 0.65
 				self.velPub.publish(t)
 				sleep(1)
 				t.linear.x = 0
