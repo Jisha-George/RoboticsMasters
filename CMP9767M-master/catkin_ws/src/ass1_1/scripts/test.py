@@ -274,6 +274,7 @@ class Weed_Killer:
 				self.velPub.publish(t)
 				sleep(1)
 			
+
 			#align the robot to face forwards
 			#code adapted from ther construct how to rotate robot using feedback from odometery
 			_,_,yaw = euler_from_quaternion([0,0,self.ori[2], self.ori[3]])
