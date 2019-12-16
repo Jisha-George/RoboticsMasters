@@ -328,4 +328,3 @@ if __name__ == '__main__':
 	start = Weed_Killer()
 	rospy.spin()
 	cv2.destroyAllWindows()
-
